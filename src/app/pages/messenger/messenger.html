@@ -1,0 +1,16 @@
+<div class="messenger-container">
+  <div class="chat-list">
+    <app-chat-list 
+      [conversations]="conversations()"
+      [(selectedConversationId)]="conversationService.selectedConversationId"
+      [(previousConversationId)]="conversationService.previousConversationId">
+    </app-chat-list>
+  </div>
+  <div class="chat-window">
+    <app-chat-window 
+      [conversation]="conversationService.selectedConversation()"
+      [user]="user()"
+      (messageSent)="onMessageSent($event)">
+    </app-chat-window>
+  </div>
+</div>

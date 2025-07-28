@@ -1,0 +1,142 @@
+<div class="chat-window-container h-full flex flex-col" *ngIf="conversation(); else noConversation">
+  <!-- Chat Header -->
+  <div class="chat-header">
+    <p-toolbar styleClass="border-none bg-surface-0 dark:bg-surface-900">
+      <div class="flex items-center w-full">
+        <!-- Avatar and Info -->
+        <div class="flex items-center flex-1">
+          <p-avatar 
+            [image]="getAvatar()"
+            size="large"
+            shape="circle"
+            class="mr-3">
+          </p-avatar>
+          
+          <div class="flex flex-col">
+            <h3 class="font-semibold text-surface-900 dark:text-surface-0 m-0">
+              {{ getDisplayName() }}
+            </h3>
+            <span 
+              *ngIf="!conversation()!.isGroup" 
+              class="text-sm text-surface-500 dark:text-surface-400"
+              [ngClass]="{
+                'text-green-500': getOnlineStatus() === 'online',
+                'text-surface-500': getOnlineStatus() === 'offline'
+              }">
+              {{ getOnlineStatus() }}
+            </span>
+            <span 
+              *ngIf="conversation()!.isGroup" 
+              class="text-sm text-surface-500 dark:text-surface-400">
+              {{ conversation()!.participants.length }} members
+            </span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <p-button 
+            icon="pi pi-phone" 
+            severity="secondary" 
+            [text]="true"
+            [rounded]="true"
+            class="p-button-sm">
+          </p-button>
+          <p-button 
+            icon="pi pi-video" 
+            severity="secondary" 
+            [text]="true"
+            [rounded]="true"
+            class="p-button-sm">
+          </p-button>
+          <p-button 
+            icon="pi pi-ellipsis-v" 
+            severity="secondary" 
+            [text]="true"
+            [rounded]="true"
+            class="p-button-sm">
+          </p-button>
+        </div>
+      </div>
+    </p-toolbar>
+  </div>
+
+  <!-- Messages Area -->
+  <div class="messages-container flex-1 overflow-hidden">
+    <p-scrollPanel [style]="{'width': '100%', 'height': '100%'}" styleClass="custom-scrollbar">
+      <div class="messages-list p-4 space-y-4">
+        <div 
+          *ngFor="let message of messages(); trackBy: trackByMessageId" 
+          class="message-wrapper"
+          [ngClass]="{
+            'message-own': message.senderId === user()?.id,
+            'message-other': message.senderId !== user()?.id
+          }">
+          <div class="message-bubble" [ngClass]="{
+            'bg-primary-500 text-white': message.senderId === user()?.id,
+            'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-0': message.senderId !== user()?.id
+          }">
+            <div class="message-content">
+              {{ message.content }}
+            </div>
+            <div class="message-time">
+              {{ formatMessageTime(message.timestamp) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-scrollPanel>
+  </div>
+
+  <!-- Message Input -->
+  <div class="message-input-container">
+    <div class="flex items-end gap-3 p-4 bg-surface-0 dark:bg-surface-900 border-t border-surface-200 dark:border-surface-700">
+      <!-- Attachment Button -->
+      <p-button 
+        icon="pi pi-paperclip" 
+        severity="secondary" 
+        [text]="true"
+        [rounded]="true"
+        class="p-button-sm flex-shrink-0">
+      </p-button>
+
+      <!-- Message Input -->
+      <div class="flex-1">
+        <textarea
+          pInputText
+          [(ngModel)]="newMessage"
+          (keydown)="onKeyDown($event)"
+          placeholder="Type a message..."
+          rows="1"
+          class="w-full resize-none border border-surface-300 dark:border-surface-600 rounded-lg p-3 bg-surface-0 dark:bg-surface-800 text-surface-900 dark:text-surface-0"
+          style="min-height: 44px; max-height: 120px;"
+          #messageInput>
+        </textarea>
+      </div>
+
+      <!-- Send Button -->
+      <p-button 
+        icon="pi pi-send" 
+        [disabled]="!newMessage.trim()"
+        (onClick)="sendMessage()"
+        [rounded]="true"
+        class="p-button-sm flex-shrink-0">
+      </p-button>
+    </div>
+  </div>
+</div>
+
+<!-- No Conversation Selected -->
+<ng-template #noConversation>
+  <div class="no-conversation flex items-center justify-center h-full">
+    <div class="text-center">
+      <i class="pi pi-comments text-6xl text-surface-400 dark:text-surface-500 mb-4"></i>
+      <h3 class="text-xl font-semibold text-surface-700 dark:text-surface-300 mb-2">
+        Welcome to Messenger
+      </h3>
+      <p class="text-surface-500 dark:text-surface-400">
+        Select a conversation from the list to start chatting
+      </p>
+    </div>
+  </div>
+</ng-template>

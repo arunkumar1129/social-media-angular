@@ -1,0 +1,63 @@
+.messenger-container {
+  display: flex;
+  height: 100%;
+  background: var(--p-surface-0);
+  overflow: hidden;
+}
+
+.chat-list {
+  width: 380px;
+  min-width: 320px;
+  max-width: 450px;
+  border-right: 1px solid var(--p-surface-200);
+  background: var(--p-surface-0);
+  flex-shrink: 0;
+}
+
+.chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--p-surface-50);
+  min-width: 0; // Allow flex child to shrink below content size
+}
+
+// Dark mode styles
+:host-context(.app-dark-mode-class) {
+  .messenger-container {
+    background: var(--p-surface-900);
+  }
+  
+  .chat-list {
+    border-right-color: var(--p-surface-700);
+    background: var(--p-surface-900);
+  }
+  
+  .chat-window {
+    background: var(--p-surface-800);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .messenger-container {
+    flex-direction: column;
+  }
+  
+  .chat-list {
+    width: 100%;
+    height: 50%;
+    border-right: none;
+    border-bottom: 1px solid var(--p-surface-200);
+  }
+  
+  .chat-window {
+    height: 50%;
+  }
+  
+  :host-context(.app-dark-mode-class) {
+    .chat-list {
+      border-bottom-color: var(--p-surface-700);
+    }
+  }
+}

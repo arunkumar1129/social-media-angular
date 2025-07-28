@@ -1,0 +1,214 @@
+:host {
+    height: 100%;
+}
+
+.chat-window-container {
+  background: var(--p-surface-0);
+  height: 100%;
+  
+  .chat-header {
+    border-bottom: 1px solid var(--p-surface-200);
+    flex-shrink: 0;
+    
+    :host ::ng-deep {
+      .p-toolbar {
+        padding: 1rem 1.5rem;
+        border: none !important;
+        background: var(--p-surface-0) !important;
+        
+        .p-toolbar-group-start,
+        .p-toolbar-group-end {
+          gap: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .messages-container {
+    background: var(--p-surface-50);
+    
+    :host ::ng-deep {
+      .p-scrollpanel {
+        .p-scrollpanel-wrapper {
+          border: none;
+        }
+        
+        .p-scrollpanel-bar-y {
+          background: var(--p-surface-300);
+          width: 6px;
+          
+          &:hover {
+            background: var(--p-surface-400);
+          }
+        }
+      }
+    }
+  }
+
+  .messages-list {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .message-wrapper {
+    display: flex;
+    margin-bottom: 0.75rem;
+    
+    &.message-own {
+      justify-content: flex-end;
+      
+      .message-bubble {
+        max-width: 70%;
+        margin-left: 3rem;
+      }
+    }
+    
+    &.message-other {
+      justify-content: flex-start;
+      
+      .message-bubble {
+        max-width: 70%;
+        margin-right: 3rem;
+      }
+    }
+  }
+
+  .message-bubble {
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    
+    .message-content {
+      line-height: 1.4;
+      margin-bottom: 0.25rem;
+    }
+    
+    .message-time {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      text-align: right;
+    }
+  }
+
+  .message-input-container {
+    flex-shrink: 0;
+    background: var(--p-surface-0);
+    
+    textarea {
+      transition: border-color 0.2s ease;
+      
+      &:focus {
+        border-color: var(--p-primary-500) !important;
+        box-shadow: 0 0 0 1px var(--p-primary-500) !important;
+        outline: none;
+      }
+      
+      &::placeholder {
+        color: var(--p-surface-500);
+      }
+    }
+    
+    :host ::ng-deep {
+      .p-button {
+        &.p-button-sm {
+          width: 2.5rem;
+          height: 2.5rem;
+        }
+        
+        &:disabled {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+
+  .no-conversation {
+    background: var(--p-surface-50);
+  }
+}
+
+// Dark mode styles
+:host-context(.app-dark-mode-class) {
+  .chat-window-container {
+    background: var(--p-surface-900);
+    
+    .chat-header {
+      border-bottom-color: var(--p-surface-700);
+      
+      :host ::ng-deep {
+        .p-toolbar {
+          background: var(--p-surface-900) !important;
+        }
+      }
+    }
+    
+    .messages-container {
+      background: var(--p-surface-800);
+    }
+    
+    .message-bubble {
+      &.bg-surface-100 {
+        background: var(--p-surface-700) !important;
+        color: var(--p-surface-0) !important;
+      }
+    }
+    
+    .message-input-container {
+      background: var(--p-surface-900);
+      border-color: var(--p-surface-700);
+      
+      textarea {
+        background: var(--p-surface-800) !important;
+        color: var(--p-surface-0) !important;
+        border-color: var(--p-surface-600) !important;
+      }
+    }
+    
+    .no-conversation {
+      background: var(--p-surface-800);
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .chat-window-container {
+    .chat-header {
+      :host ::ng-deep {
+        .p-toolbar {
+          padding: 0.75rem 1rem;
+        }
+      }
+    }
+    
+    .messages-list {
+      padding: 1rem;
+    }
+    
+    .message-wrapper {
+      &.message-own .message-bubble,
+      &.message-other .message-bubble {
+        max-width: 85%;
+        margin-left: 1rem;
+        margin-right: 1rem;
+      }
+    }
+    
+    .message-input-container {
+      padding: 0.75rem 1rem !important;
+    }
+  }
+}
+
+// Auto-resize textarea
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-wrapper {
+  animation: fadeIn 0.3s ease-out;
+}

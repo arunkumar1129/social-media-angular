@@ -1,0 +1,88 @@
+<div class="chat-list-container h-full flex flex-col">
+  <!-- Search Header -->
+  <div class="search-section p-4">
+    <p-iconField iconPosition="left" class="w-full">
+      <p-inputIcon>
+        <i class="pi pi-search"></i>
+      </p-inputIcon>
+      <input 
+        type="text" 
+        pInputText 
+        placeholder="Search conversations..." 
+        [(ngModel)]="searchTerm"
+        class="w-full"
+      />
+    </p-iconField>
+  </div>
+
+  <!-- Conversations List -->
+  <div class="conversations-list flex-1 overflow-hidden">
+    <p-listbox 
+      [options]="filteredConversations()" 
+      [(ngModel)]="selectedConversationId"
+      (onChange)="onConversationSelect($event.value)"
+      [listStyle]="{'max-height': '100%', 'border': 'none'}"
+      class="w-full h-full border-none"
+      optionLabel="displayName"
+      optionValue="_id">
+      
+      <ng-template let-conversation pTemplate="item">
+        <div class="conversation-item w-full flex items-center p-3 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer border-b border-surface-100 dark:border-surface-800">
+          <!-- Avatar -->
+          <div class="relative mr-3 flex">
+            <p-avatar 
+              [image]="getAvatar(conversation)"
+              size="large"
+              shape="circle"
+            ></p-avatar>
+            
+            <!-- Online status indicator for non-group chats -->
+            <div 
+              *ngIf="!conversation.isGroup && conversation.otherParticipant?.status === 'online'"
+              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-surface-900">
+            </div>
+          </div>
+
+          <!-- Conversation Details -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h4 class="font-semibold text-surface-900 dark:text-surface-0 truncate">
+                {{ getDisplayName(conversation) }}
+              </h4>
+              <span class="text-xs text-surface-500 dark:text-surface-400 ml-2">
+                {{ getLastMessageTime(conversation) }}
+              </span>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <p class="text-sm text-surface-600 dark:text-surface-300 truncate flex-1 mr-2">
+                {{ truncateMessage(conversation.lastMessage?.content || '') }}
+              </p>
+              
+              <!-- Unread count badge -->
+              <p-badge 
+                *ngIf="conversation.unreadCount > 0"
+                [value]="conversation.unreadCount.toString()"
+                severity="info"
+                class="ml-2">
+              </p-badge>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- Empty state template -->
+      <ng-template pTemplate="empty">
+        <div class="flex flex-col items-center justify-center p-8 text-center">
+          <i class="pi pi-comments text-4xl text-surface-400 dark:text-surface-500 mb-4"></i>
+          <h3 class="text-lg font-semibold text-surface-700 dark:text-surface-300 mb-2">
+            No conversations found
+          </h3>
+          <p class="text-surface-500 dark:text-surface-400">
+            {{ searchTerm() ? 'Try adjusting your search terms' : 'Start a new conversation to get started' }}
+          </p>
+        </div>
+      </ng-template>
+    </p-listbox>
+  </div>
+</div>
