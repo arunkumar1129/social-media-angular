@@ -1,11 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
-import { Observable, tap, BehaviorSubject, take } from 'rxjs';
+import { Observable, tap, BehaviorSubject, take, takeUntil, Subject } from 'rxjs';
 import { Conversation } from '../models/conversation.model';
 import { ApiResponse } from '../models/api-response.model';
 import { Message, MessageSentEvent } from '../models/message.model';
 import { WebSocketService } from './websocket.service';
 import { MessageReceiveData } from '../models/websocket.model';
+import { TimeUtilsService } from './time-utils.service';
 
 export interface CreateConversationRequest {
   participantIds: string[];
@@ -29,6 +30,7 @@ export class ConversationService {
   private http = inject(HttpClient);
   private wsService = inject(WebSocketService);
   private apiUrl = 'http://localhost:3000/api';
+  private destroy$ = new Subject<void>();
   
   // Signals for reactive state management
   conversations = signal<Conversation[]>([]);
@@ -38,6 +40,22 @@ export class ConversationService {
   selectedConversation = computed(() => this.conversations().find(c => c._id === this.selectedConversationId()) || null);
 
   messages = signal<Message[]>([]);
+  
+  // Typing indicators - Map of conversationId -> Map of userId -> isTyping
+  private typingUsers = signal<Map<string, Map<string, boolean>>>(new Map());
+  
+  // Public computed for typing status
+  typingInConversation = computed(() => {
+    const conversationId = this.selectedConversationId();
+    if (!conversationId) return [];
+    
+    const conversationTyping = this.typingUsers().get(conversationId);
+    if (!conversationTyping) return [];
+    
+    return Array.from(conversationTyping.entries())
+      .filter(([userId, isTyping]) => isTyping)
+      .map(([userId]) => userId);
+  });
 
   constructor() {
     // Subscribe to real-time messages from WebSocket
@@ -47,7 +65,49 @@ export class ConversationService {
       }
     });
 
-    // Subscribe to user status updates
+    // Subscribe to typing events
+    this.wsService.typingStart$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(typingStart => {
+        if (typingStart) {
+          this.handleTypingStart(typingStart.conversationId, typingStart.userId);
+        }
+      });
+
+    this.wsService.typingStop$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(typingStop => {
+        if (typingStop) {
+          this.handleTypingStop(typingStop.conversationId, typingStop.userId);
+        }
+      });
+
+    // Subscribe to user status updates from WebSocket
+    this.wsService.userOnline$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(userOnline => {
+        if (userOnline) {
+          this.updateUserStatusInConversations(userOnline.userId, 'online');
+        }
+      });
+
+    this.wsService.userOffline$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(userOffline => {
+        if (userOffline) {
+          this.updateUserStatusInConversations(userOffline.userId, 'offline');
+        }
+      });
+
+    this.wsService.userStatusUpdate$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(statusUpdate => {
+        if (statusUpdate) {
+          this.updateUserStatusInConversations(statusUpdate.userId, statusUpdate.status);
+        }
+      });
+
+    // Subscribe to legacy user status for backward compatibility
     this.wsService.userStatus$.subscribe(statusEvent => {
       if (statusEvent) {
         this.updateUserStatus(statusEvent.userId, statusEvent.status);
@@ -249,6 +309,106 @@ export class ConversationService {
     this.wsService.clearData();
   }
 
+  // ============ Typing Methods ============
+
+  /**
+   * Start typing indicator for current user
+   */
+  startTyping(conversationId: string): void {
+    this.wsService.startTyping({
+      conversationId,
+      username: 'Current User' // This could be enhanced to use actual username
+    });
+  }
+
+  /**
+   * Stop typing indicator for current user
+   */
+  stopTyping(conversationId: string): void {
+    this.wsService.stopTyping({
+      conversationId
+    });
+  }
+
+  /**
+   * Check if any users are typing in a conversation
+   */
+  isAnyoneTyping(conversationId: string): boolean {
+    const conversationTyping = this.typingUsers().get(conversationId);
+    if (!conversationTyping) return false;
+    
+    return Array.from(conversationTyping.values()).some(isTyping => isTyping === true);
+  }
+
+  /**
+   * Get list of users typing in a conversation
+   */
+  getTypingUsers(conversationId: string): string[] {
+    const conversationTyping = this.typingUsers().get(conversationId);
+    if (!conversationTyping) return [];
+    
+    return Array.from(conversationTyping.entries())
+      .filter(([userId, isTyping]) => isTyping)
+      .map(([userId]) => userId);
+  }
+
+  /**
+   * Get typing text for display
+   */
+  getTypingText(conversationId: string): string {
+    const typingUsers = this.getTypingUsers(conversationId);
+
+    if (!this.selectedConversation()?.isGroup) {
+      return `${this.selectedConversation()?.otherParticipant?.displayName} is typing...`;
+    }
+    
+    if (typingUsers.length === 0) {
+      return '';
+    } else if (typingUsers.length === 1) {
+      return 'Someone is typing...';
+    } else if (typingUsers.length === 2) {
+      return '2 people are typing...';
+    } else {
+      return `${typingUsers.length} people are typing...`;
+    }
+  }
+
+  /**
+   * Handle typing start event
+   */
+  private handleTypingStart(conversationId: string, userId: string): void {
+    const currentTyping = this.typingUsers();
+    const newTyping = new Map(currentTyping);
+    
+    if (!newTyping.has(conversationId)) {
+      newTyping.set(conversationId, new Map());
+    }
+    
+    const conversationTyping = newTyping.get(conversationId)!;
+    conversationTyping.set(userId, true);
+    
+    this.typingUsers.set(newTyping);
+    
+    // Auto-clear typing indicator after 3 seconds
+    setTimeout(() => {
+      this.handleTypingStop(conversationId, userId);
+    }, 3000);
+  }
+
+  /**
+   * Handle typing stop event
+   */
+  private handleTypingStop(conversationId: string, userId: string): void {
+    const currentTyping = this.typingUsers();
+    const newTyping = new Map(currentTyping);
+    
+    const conversationTyping = newTyping.get(conversationId);
+    if (conversationTyping) {
+      conversationTyping.set(userId, false);
+      this.typingUsers.set(newTyping);
+    }
+  }
+
   // Private helper methods
   private handleRealtimeMessage(message: MessageReceiveData): void {
     const currentMessages = this.messages();
@@ -277,6 +437,48 @@ export class ConversationService {
       }
       return conversation;
     });
+    this.conversations.set(updatedConversations);
+  }
+
+  /**
+   * Update user status in conversations (enhanced version)
+   */
+  private updateUserStatusInConversations(userId: string, status: 'online' | 'offline'): void {
+    // Update the conversation list to trigger UI updates
+    const currentConversations = this.conversations();
+    const updatedConversations = currentConversations.map(conversation => {
+      // Update direct message conversations
+      if (!conversation.isGroup && conversation.otherParticipant?._id === userId) {
+        return {
+          ...conversation,
+          otherParticipant: {
+            ...conversation.otherParticipant,
+            status
+          }
+        };
+      }
+      
+      // Update group conversations - update participant status
+      if (conversation.isGroup && conversation.participants) {
+        const updatedParticipants = conversation.participants.map(participant => {
+          if (participant._id === userId) {
+            return {
+              ...participant,
+              status
+            };
+          }
+          return participant;
+        });
+        
+        return {
+          ...conversation,
+          participants: updatedParticipants
+        };
+      }
+      
+      return conversation;
+    });
+    
     this.conversations.set(updatedConversations);
   }
 
@@ -318,5 +520,16 @@ export class ConversationService {
       updatedConversations[index] = updatedConversation;
       this.conversations.set(updatedConversations);
     }
+  }
+
+  /**
+   * Cleanup method for service destruction
+   */
+  destroy(): void {
+    // Clear typing indicators
+    this.typingUsers.set(new Map());
+    
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

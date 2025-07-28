@@ -212,3 +212,42 @@
 .message-wrapper {
   animation: fadeIn 0.3s ease-out;
 }
+
+// Typing indicator animations
+.typing-indicator {
+  .typing-dots {
+    .typing-text {
+      font-size: 0.875rem;
+      font-style: italic;
+    }
+    
+    .typing-animation {
+      .typing-dot {
+        width: 4px;
+        height: 4px;
+        background: var(--p-surface-500);
+        border-radius: 50%;
+        animation: typingPulse 1.5s infinite;
+        
+        &:nth-child(2) {
+          animation-delay: 0.3s;
+        }
+        
+        &:nth-child(3) {
+          animation-delay: 0.6s;
+        }
+      }
+    }
+  }
+}
+
+@keyframes typingPulse {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

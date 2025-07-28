@@ -20,10 +20,10 @@
               *ngIf="!conversation()!.isGroup" 
               class="text-sm text-surface-500 dark:text-surface-400"
               [ngClass]="{
-                'text-green-500': getOnlineStatus() === 'online',
-                'text-surface-500': getOnlineStatus() === 'offline'
+                'text-green-500': conversation()?.otherParticipant?.status === 'online',
+                'text-surface-500': conversation()?.otherParticipant?.status === 'offline'
               }">
-              {{ getOnlineStatus() }}
+              {{ conversation()?.otherParticipant?.status }}
             </span>
             <span 
               *ngIf="conversation()!.isGroup" 
@@ -84,6 +84,22 @@
             </div>
           </div>
         </div>
+        
+        <!-- Typing Indicator -->
+        <div 
+          *ngIf="isAnyoneTyping()" 
+          class="typing-indicator message-wrapper message-other">
+          <div class="message-bubble bg-surface-100 dark:bg-surface-800 text-surface-500 dark:text-surface-400">
+            <div class="typing-dots flex items-center space-x-1">
+              <span class="typing-text">{{ getTypingText() }}</span>
+              <div class="typing-animation flex space-x-1 ml-2">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </p-scrollPanel>
   </div>
@@ -105,6 +121,7 @@
         <textarea
           pInputText
           [(ngModel)]="newMessage"
+          (input)="onMessageInput()"
           (keydown)="onKeyDown($event)"
           placeholder="Type a message..."
           rows="1"

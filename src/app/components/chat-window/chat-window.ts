@@ -13,8 +13,8 @@ import { Conversation } from '../../models/conversation.model';
 import { User } from '../../models/user.model';
 import { ConversationService } from '../../services/conversation.service';
 import { Message, MessageSentEvent } from '../../models/message.model';
-import { WebSocketService } from '../../services/websocket.service';
 import { TimeUtilsService } from '../../services/time-utils.service';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-chat-window',
@@ -38,6 +38,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
   private socketService = inject(WebSocketService);
   private timeUtils = inject(TimeUtilsService);
   private messageSubscription?: Subscription;
+  private typingTimeout?: ReturnType<typeof setTimeout>;
 
   conversation = input<Conversation | null>(null);
   user = input<User | undefined>();
@@ -46,10 +47,20 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
   newMessage: string = '';
   messages = this.conversationService.messages;
   isLoading: boolean = false;
+  
+  // Typing state
+  isTyping: boolean = false;
 
   constructor() {
     effect(() => {
       if (this.messages()) {
+        setTimeout(() => this.scrollToBottom(), 100);
+      }
+    });
+
+    // Scroll to bottom when typing indicators appear
+    effect(() => {
+      if (this.conversation() && this.isAnyoneTyping()) {
         setTimeout(() => this.scrollToBottom(), 100);
       }
     });
@@ -64,6 +75,16 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
+    
+    // Clear typing timeout
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+    
+    // Stop typing indicator if active
+    if (this.isTyping && this.conversation()) {
+      this.conversationService.stopTyping(this.conversation()!._id);
+    }
   }
 
   sendMessage() {
@@ -76,17 +97,22 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
       type: 'text' as const
     };
 
+    // Stop typing indicator
+    this.stopTyping();
+
     this.newMessage = '';
 
-    // Send message via API
-    // this.conversationService.sendMessage({ ...messageRequest, conversationId: this.conversation._id }).subscribe();
-    this.socketService.sendMessage({ ...messageRequest, conversationId: this.conversation()!._id });
+    // Send message via socket
+    this.socketService.sendMessage({...messageRequest, conversationId: this.conversation()!._id});
   }
 
   onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.sendMessage();
+    } else {
+      // Handle typing for other keys
+      this.onMessageInput();
     }
   }
 
@@ -120,12 +146,74 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     }
   }
 
-  getOnlineStatus(): string {
-    if (!this.conversation() || this.conversation()!.isGroup) return '';
-    return this.conversation()!.otherParticipant?.status === 'online' ? 'online' : 'offline';
-  }
-
   trackByMessageId(index: number, message: Message): string {
     return message._id;
+  }
+
+  // ============ Typing Methods ============
+
+  /**
+   * Handle input change and typing indicators
+   */
+  onMessageInput(): void {
+    if (!this.conversation()) return;
+
+    const conversationId = this.conversation()!._id;
+
+    // Start typing if not already typing
+    if (!this.isTyping) {
+      this.startTyping();
+    }
+
+    // Clear existing timeout
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+
+    // Set timeout to stop typing after 1 second of inactivity
+    this.typingTimeout = setTimeout(() => {
+      this.stopTyping();
+    }, 1000);
+  }
+
+  /**
+   * Start typing indicator
+   */
+  private startTyping(): void {
+    if (!this.conversation() || this.isTyping) return;
+
+    this.isTyping = true;
+    this.conversationService.startTyping(this.conversation()!._id);
+  }
+
+  /**
+   * Stop typing indicator
+   */
+  private stopTyping(): void {
+    if (!this.conversation() || !this.isTyping) return;
+
+    this.isTyping = false;
+    this.conversationService.stopTyping(this.conversation()!._id);
+    
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+      this.typingTimeout = undefined;
+    }
+  }
+
+  /**
+   * Check if anyone is typing in the current conversation
+   */
+  isAnyoneTyping(): boolean {
+    if (!this.conversation()) return false;
+    return this.conversationService.isAnyoneTyping(this.conversation()!._id);
+  }
+
+  /**
+   * Get typing text for display
+   */
+  getTypingText(): string {
+    if (!this.conversation()) return '';
+    return this.conversationService.getTypingText(this.conversation()!._id);
   }
 }

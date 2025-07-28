@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit, inject, input, computed, signal, model } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, inject, input, computed, signal, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ListboxModule } from 'primeng/listbox';
@@ -26,7 +26,7 @@ import { TimeUtilsService } from '../../services/time-utils.service';
   templateUrl: './chat-list.html',
   styleUrls: ['./chat-list.scss']
 })
-export class ChatListComponent {
+export class ChatListComponent implements OnInit, OnDestroy {
   private timeUtils = inject(TimeUtilsService);
 
   conversations = input<Conversation[]>([]);
@@ -79,5 +79,14 @@ export class ChatListComponent {
       return message;
     }
     return message.substring(0, maxLength) + '...';
+  }
+
+  ngOnInit(): void {
+    // User status updates are now handled by ConversationService
+    // No need for additional subscriptions in the component
+  }
+
+  ngOnDestroy(): void {
+    // No cleanup needed as ConversationService handles subscriptions
   }
 }

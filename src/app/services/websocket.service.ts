@@ -47,7 +47,13 @@ export class WebSocketService {
   private socket: Socket | null = null;
   private baseUrl = 'http://localhost:3000';
 
-  // Subjects for real-time events
+  // User status tracking
+  private onlineUsersMap = new Map<string, OnlineUser>();
+  
+  // Subscription management
+  private typingMappingSubscriptions: any[] = [];
+
+  // ...existing code...
   private messageReceiveSubject = new BehaviorSubject<MessageReceiveData | null>(null);
   private messageDeletedSubject = new BehaviorSubject<MessageDeletedData | null>(null);
   private messageErrorSubject = new BehaviorSubject<MessageErrorData | null>(null);
@@ -99,7 +105,8 @@ export class WebSocketService {
 
   // Legacy observables for backward compatibility
   message$ = this.messageReceiveSubject.asObservable();
-  typing$ = new BehaviorSubject<TypingEvent | null>(null).asObservable();
+  private legacyTypingSubject = new BehaviorSubject<TypingEvent | null>(null);
+  typing$ = this.legacyTypingSubject.asObservable();
   userStatus$ = new BehaviorSubject<UserStatusEvent | null>(null).asObservable();
 
   /**
@@ -123,6 +130,7 @@ export class WebSocketService {
       });
 
       this.setupEventListeners();
+      this.setupLegacyTypingMapping();
     } catch (error) {
       console.error('Error creating Socket.IO connection:', error);
     }
@@ -136,6 +144,11 @@ export class WebSocketService {
       this.socket.disconnect();
       this.socket = null;
     }
+    
+    // Cleanup typing mapping subscriptions
+    this.typingMappingSubscriptions.forEach(sub => sub.unsubscribe());
+    this.typingMappingSubscriptions = [];
+    
     this.connectionStatusSubject.next(false);
   }
 
@@ -186,19 +199,27 @@ export class WebSocketService {
 
     // User status events
     this.socket.on(SocketEvents.USER_ONLINE, (data: UserOnlineData) => {
+      console.log('User came online:', data);
       this.userOnlineSubject.next(data);
+      this.updateOnlineUser(data.userId, 'online');
     });
 
     this.socket.on(SocketEvents.USER_OFFLINE, (data: UserOfflineData) => {
+      console.log('User went offline:', data);
       this.userOfflineSubject.next(data);
+      this.updateOnlineUser(data.userId, 'offline', data.lastSeen);
     });
 
     this.socket.on(SocketEvents.USER_STATUS_UPDATE_EMIT, (data: UserStatusUpdateData) => {
+      console.log('User status updated:', data);
       this.userStatusUpdateSubject.next(data);
+      this.updateOnlineUser(data.userId, data.status, data.timestamp);
     });
 
     this.socket.on(SocketEvents.USERS_ONLINE_LIST, (data: OnlineUser[]) => {
+      console.log('Online users list received:', data);
       this.onlineUsersListSubject.next(data);
+      this.updateOnlineUsersFromList(data);
     });
 
     // Message read events
@@ -315,6 +336,60 @@ export class WebSocketService {
     }
   }
 
+  /**
+   * Check if a user is online
+   */
+  isUserOnline(userId: string): boolean {
+    const user = this.onlineUsersMap.get(userId);
+    return user?.status === 'online';
+  }
+
+  /**
+   * Get user's last seen time
+   */
+  getUserLastSeen(userId: string): Date | null {
+    const user = this.onlineUsersMap.get(userId);
+    return user?.lastSeen || null;
+  }
+
+  /**
+   * Get all online users
+   */
+  getAllOnlineUsers(): OnlineUser[] {
+    return Array.from(this.onlineUsersMap.values()).filter(user => user.status === 'online');
+  }
+
+  /**
+   * Update online user in map
+   */
+  private updateOnlineUser(userId: string, status: 'online' | 'offline', lastSeen?: Date): void {
+    const existingUser = this.onlineUsersMap.get(userId);
+    
+    if (existingUser) {
+      existingUser.status = status;
+      if (lastSeen) {
+        existingUser.lastSeen = lastSeen;
+      }
+    } else {
+      this.onlineUsersMap.set(userId, {
+        userId,
+        socketId: '',
+        status,
+        lastSeen: lastSeen || new Date()
+      });
+    }
+  }
+
+  /**
+   * Update online users from list
+   */
+  private updateOnlineUsersFromList(users: OnlineUser[]): void {
+    this.onlineUsersMap.clear();
+    users.forEach(user => {
+      this.onlineUsersMap.set(user.userId, user);
+    });
+  }
+
   // ============ Message Read Methods ============
 
   /**
@@ -413,6 +488,12 @@ export class WebSocketService {
     this.webrtcOfferSubject.next(null);
     this.webrtcAnswerSubject.next(null);
     this.webrtcIceCandidateSubject.next(null);
+    
+    // Clear legacy typing subject
+    this.legacyTypingSubject.next(null);
+    
+    // Clear user status data
+    this.onlineUsersMap.clear();
   }
 
   // ============ Legacy Methods for Backward Compatibility ============
@@ -426,5 +507,49 @@ export class WebSocketService {
     } else {
       this.stopTyping({ conversationId });
     }
+  }
+
+  /**
+   * Setup legacy typing event mapping for backward compatibility
+   */
+  private setupLegacyTypingMapping(): void {
+    console.log('🔧 WebSocket: Setting up legacy typing mapping');
+    
+    // Clear any existing subscriptions
+    this.typingMappingSubscriptions.forEach(sub => sub.unsubscribe());
+    this.typingMappingSubscriptions = [];
+
+    // Map typingStart$ to legacy typing$ observable
+    const startSub = this.typingStart$.subscribe(typingStart => {
+      console.log('📨 WebSocket: typingStart$ received:', typingStart);
+      if (typingStart) {
+        const legacyEvent = {
+          conversationId: typingStart.conversationId,
+          userId: typingStart.userId,
+          userName: typingStart.username,
+          isTyping: true
+        };
+        console.log('📨 WebSocket: Mapping to legacy typing event:', legacyEvent);
+        this.legacyTypingSubject.next(legacyEvent);
+      }
+    });
+
+    // Map typingStop$ to legacy typing$ observable
+    const stopSub = this.typingStop$.subscribe(typingStop => {
+      console.log('📨 WebSocket: typingStop$ received:', typingStop);
+      if (typingStop) {
+        const legacyEvent = {
+          conversationId: typingStop.conversationId,
+          userId: typingStop.userId,
+          userName: 'Unknown User', // TypingStopEmitData doesn't have username
+          isTyping: false
+        };
+        console.log('📨 WebSocket: Mapping to legacy typing event:', legacyEvent);
+        this.legacyTypingSubject.next(legacyEvent);
+      }
+    });
+
+    this.typingMappingSubscriptions.push(startSub, stopSub);
+    console.log('✅ WebSocket: Legacy typing mapping setup complete');
   }
 }
