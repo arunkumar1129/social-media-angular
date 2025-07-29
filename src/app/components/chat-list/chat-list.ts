@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, inject, input, computed, signal, model } from '@angular/core';
+import { Component, inject, input, computed, signal, model } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ListboxModule } from 'primeng/listbox';
@@ -34,7 +34,7 @@ import { ContactsDialogComponent } from '../contacts-dialog/contacts-dialog';
   templateUrl: './chat-list.html',
   styleUrls: ['./chat-list.scss']
 })
-export class ChatListComponent implements OnInit, OnDestroy {
+export class ChatListComponent {
   private timeUtils = inject(TimeUtilsService);
   private conversationService = inject(ConversationService);
 
@@ -48,14 +48,20 @@ export class ChatListComponent implements OnInit, OnDestroy {
 
   filteredConversations = computed(() => {
     if (!this.searchTerm()) {
-      return this.conversations();
+      return this.conversations().map(conversation => ({
+        ...conversation,
+        lastUpdated: this.timeUtils.formatConversationTime(conversation.lastMessage.timestamp)
+      }));
     }
 
     return this.conversations().filter(conversation =>
       conversation.displayName?.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
       conversation.groupName?.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
       conversation.otherParticipant?.displayName?.toLowerCase().includes(this.searchTerm().toLowerCase())
-    );
+    ).map(conversation => ({
+      ...conversation,
+      lastUpdated: this.timeUtils.formatConversationTime(conversation.lastUpdated)
+    }));
   });
 
   onConversationSelect(conversationId: string): void {
@@ -63,25 +69,11 @@ export class ChatListComponent implements OnInit, OnDestroy {
     this.selectedConversationId.set(conversationId);
   }
 
-  getDisplayName(conversation: Conversation): string {
-    if (conversation.isGroup) {
-      return conversation.groupName || 'Group Chat';
-    }
-    return conversation.displayName || conversation.otherParticipant?.displayName || 'Unknown User';
-  }
-
   getAvatar(conversation: Conversation): string {
     if (conversation.isGroup) {
       return conversation.groupAvatar || 'images/default-group-avatar.png';
     }
     return conversation.otherParticipant?.avatarUrl || 'images/default-avatar.png';
-  }
-
-  getLastMessageTime(conversation: Conversation): string {
-    if (!conversation.lastUpdated) {
-      return '';
-    }
-    return this.timeUtils.formatConversationTime(conversation.lastUpdated);
   }
 
   truncateMessage(message: string, maxLength: number = 50): string {
@@ -96,25 +88,13 @@ export class ChatListComponent implements OnInit, OnDestroy {
   }
 
   onUserSelected(user: User): void {
-    // Create a new direct conversation with the selected user
     this.conversationService.createDirectConversation(user._id || user.id).subscribe({
       next: (response) => {
-        // Conversation created and selected automatically by the service
         this.showContactsDialog.set(false);
       },
       error: (error) => {
-        console.error('Error creating conversation:', error);
-        // Handle error - maybe show a toast notification
+        this.showContactsDialog.set(false);
       }
     });
-  }
-
-  ngOnInit(): void {
-    // User status updates are now handled by ConversationService
-    // No need for additional subscriptions in the component
-  }
-
-  ngOnDestroy(): void {
-    // No cleanup needed as ConversationService handles subscriptions
   }
 }

@@ -3,6 +3,27 @@
   height: 100%;
   background: var(--p-surface-0);
   overflow: hidden;
+  flex-direction: column;
+}
+
+.connection-status {
+  position: fixed;
+  top: 20px;
+  right: 50%;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in;
+  transform: translateX(50%);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-content {
+  display: flex;
+  height: 100%;
+  flex: 1;
 }
 
 .chat-list {

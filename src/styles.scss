@@ -5,8 +5,14 @@
 @custom-variant dark (&:where([data-theme=dark], .app-dark-mode-class *));
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.brand-favicon {
+    width: 50px;
+    height: 50px;
+    filter: brightness(1.5) saturate(0.5);
 }

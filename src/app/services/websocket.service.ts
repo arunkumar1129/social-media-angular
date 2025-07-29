@@ -47,7 +47,13 @@ export class WebSocketService {
   private static readonly SOCKET_TRANSPORTS = ['websocket', 'polling'];
   private static readonly CONNECTION_CONFIG = {
     upgrade: true,
-    autoConnect: true
+    autoConnect: true,
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    maxReconnectionAttempts: 10,
+    timeout: 20000,
+    forceNew: false
   };
 
   // Dependencies
@@ -56,6 +62,7 @@ export class WebSocketService {
   // Core Properties
   private socket: Socket | null = null;
   private baseUrl = WebSocketService.DEFAULT_BASE_URL;
+  private reconnectTimer: any = null;
 
   // User Status Tracking
   private onlineUsersMap = new Map<string, OnlineUser>();
@@ -153,15 +160,35 @@ export class WebSocketService {
 
     // Connection events
     this.socket.on('connect', () => {
+      console.log('Socket.IO connected');
       this._connectionStatus.set(true);
     });
 
     this.socket.on('disconnect', (reason) => {
+      console.log('Socket.IO disconnected:', reason);
       this._connectionStatus.set(false);
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('Socket.IO connection error:', error);
+      this._connectionStatus.set(false);
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('Socket.IO reconnected after', attemptNumber, 'attempts');
+      this._connectionStatus.set(true);
+    });
+
+    this.socket.on('reconnecting', (attemptNumber) => {
+      console.log('Socket.IO attempting to reconnect, attempt:', attemptNumber);
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('Socket.IO reconnection error:', error);
+    });
+
+    this.socket.on('reconnect_failed', () => {
+      console.error('Socket.IO failed to reconnect after all attempts');
       this._connectionStatus.set(false);
     });
 
@@ -416,7 +443,32 @@ export class WebSocketService {
     this.onlineUsersMap.clear();
   }
 
-  // Legacy Methods for Backward Compatibility
+  ensureConnection(): void {
+    if (!this.isConnected() && this.auth.token()) {
+      console.log('Attempting to reconnect WebSocket...');
+      this.connect();
+    }
+  }
+
+  startConnectionMonitoring(): void {
+    if (this.reconnectTimer) {
+      clearInterval(this.reconnectTimer);
+    }
+    
+    this.reconnectTimer = setInterval(() => {
+      if (!this.isConnected() && this.auth.token()) {
+        console.log('Connection lost, attempting to reconnect...');
+        this.connect();
+      }
+    }, 30000); // Check every 30 seconds
+  }
+
+  stopConnectionMonitoring(): void {
+    if (this.reconnectTimer) {
+      clearInterval(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
 
   sendTyping(conversationId: string, isTyping: boolean): void {
     if (isTyping) {

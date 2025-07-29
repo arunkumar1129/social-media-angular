@@ -60,10 +60,12 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between mb-1">
               <h4 class="font-semibold text-surface-900 dark:text-surface-0 truncate">
-                {{ getDisplayName(conversation) }}
+                {{ 
+                  conversation.isGroup ? conversation.groupName : conversation.displayName || conversation.otherParticipant?.displayName
+                }}
               </h4>
               <span class="text-xs text-surface-500 dark:text-surface-400 ml-2">
-                {{ getLastMessageTime(conversation) }}
+                {{ conversation.lastUpdated }}
               </span>
             </div>
             

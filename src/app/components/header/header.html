@@ -2,16 +2,19 @@
   class="bg-primary-500 text-primary-50 px-4 py-3 rounded-none shadow-md flex-shrink-0"
 >
   <div class="p-toolbar-group-start flex items-center">
-    <button
+    <!-- <button
       pButton
       type="button"
       icon="pi pi-bars"
       (click)="toggleSidebar()"
       class="p-button-text p-button-plain text-primary-50 hover:bg-primary-600 focus:ring-2 focus:ring-primary-300 rounded-full p-2 mr-3"
       aria-label="Open chat list sidebar"
-    ></button>
+    ></button> -->
     <div class="flex items-center">
-      <span class="text-xl font-semibold">Messenger App</span>
+      <img src="brand-favicon.png" alt="Virtu Verse Logo" class="brand-favicon" />
+      <span class="text-xl font-semibold ml-2">
+        Virtu Verse
+      </span>
       @if (totalUnreadCount() > 0) {
         <p-badge 
           [value]="totalUnreadCount().toString()" 

@@ -1,4 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TagModule } from 'primeng/tag';
 import { ChatListComponent } from '../../components/chat-list/chat-list';
 import { ChatWindowComponent } from '../../components/chat-window/chat-window';
 import { Conversation } from '../../models/conversation.model';
@@ -10,23 +12,31 @@ import { WebSocketService } from '../../services/websocket.service';
 @Component({
   selector: 'app-messenger',
   imports: [
+    CommonModule,
+    TagModule,
     ChatListComponent,
     ChatWindowComponent
   ],
   templateUrl: './messenger.html',
   styleUrl: './messenger.scss'
 })
-export class Messenger implements OnInit {
+export class Messenger implements OnInit, OnDestroy {
   public conversationService = inject(ConversationService);
   private userService = inject(UserService);
   private socketService = inject(WebSocketService);
   
   conversations = this.conversationService.conversations;
   user = this.userService.user;
+  connectionStatus = this.socketService.connectionStatus;
 
   ngOnInit() {
     this.socketService.connect();
+    this.socketService.startConnectionMonitoring();
     this.loadConversations();
+  }
+
+  ngOnDestroy() {
+    this.socketService.stopConnectionMonitoring();
   }
 
   private loadConversations() {
@@ -34,10 +44,6 @@ export class Messenger implements OnInit {
   }
 
   onMessageSent(event: MessageSentEvent): void {
-    // Handle message sent event
-    console.log('Message sent:', event);
     
-    // The conversation service will handle updating the conversation's last message
-    // No need to manually update here as the service manages this
   }
 }

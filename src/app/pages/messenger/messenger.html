@@ -1,16 +1,21 @@
 <div class="messenger-container">
-  <div class="chat-list">
-    <app-chat-list 
-      [conversations]="conversations()"
-      [(selectedConversationId)]="conversationService.selectedConversationId"
-      [(previousConversationId)]="conversationService.previousConversationId">
-    </app-chat-list>
+  <div class="connection-status" *ngIf="!connectionStatus()">
+    <p-tag severity="danger" value="Connection Lost - Attempting to reconnect..." icon="pi pi-exclamation-triangle"></p-tag>
   </div>
-  <div class="chat-window">
-    <app-chat-window 
-      [conversation]="conversationService.selectedConversation()"
-      [user]="user()"
-      (messageSent)="onMessageSent($event)">
-    </app-chat-window>
+  <div class="chat-content">
+    <div class="chat-list">
+      <app-chat-list 
+        [conversations]="conversations()"
+        [(selectedConversationId)]="conversationService.selectedConversationId"
+        [(previousConversationId)]="conversationService.previousConversationId">
+      </app-chat-list>
+    </div>
+    <div class="chat-window">
+      <app-chat-window 
+        [conversation]="conversationService.selectedConversation()"
+        [user]="user()"
+        (messageSent)="onMessageSent($event)">
+      </app-chat-window>
+    </div>
   </div>
 </div>
