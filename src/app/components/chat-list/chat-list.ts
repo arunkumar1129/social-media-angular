@@ -78,10 +78,10 @@ export class ChatListComponent implements OnInit, OnDestroy {
   }
 
   getLastMessageTime(conversation: Conversation): string {
-    if (!conversation.lastMessage?.timestamp) {
+    if (!conversation.lastUpdated) {
       return '';
     }
-    return this.timeUtils.formatConversationTime(conversation.lastMessage.timestamp);
+    return this.timeUtils.formatConversationTime(conversation.lastUpdated);
   }
 
   truncateMessage(message: string, maxLength: number = 50): string {

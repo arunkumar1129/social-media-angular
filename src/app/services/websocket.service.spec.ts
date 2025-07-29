@@ -101,15 +101,25 @@ describe('WebSocketService', () => {
   it('should emit connection status changes', (done) => {
     authService.token.and.returnValue('fake-token');
     
-    service.connectionStatus$.subscribe(status => {
-      if (status === true) {
-        expect(status).toBe(true);
-        done();
-      }
-    });
+    // Use effect to watch signal changes
+    let effectCleanup: any;
+    const cleanup = () => {
+      if (effectCleanup) effectCleanup();
+    };
     
-    service.connect();
-    mockSocket.connect();
+    import('@angular/core').then(({ effect }) => {
+      effectCleanup = effect(() => {
+        const status = service.connectionStatus();
+        if (status === true) {
+          expect(status).toBe(true);
+          cleanup();
+          done();
+        }
+      });
+      
+      service.connect();
+      mockSocket.connect();
+    });
   });
 
   it('should send message when connected', () => {
@@ -147,14 +157,18 @@ describe('WebSocketService', () => {
       read: false
     };
     
-    service.messageReceive$.subscribe(data => {
-      if (data) {
-        expect(data).toEqual(messageData);
-        done();
-      }
+    // Use effect to watch signal changes
+    import('@angular/core').then(({ effect }) => {
+      const cleanup = effect(() => {
+        const data = service.messageReceive();
+        if (data) {
+          expect(data).toEqual(messageData);
+          done();
+        }
+      });
+      
+      mockSocket.emit(SocketEvents.MESSAGE_RECEIVE, messageData);
     });
-    
-    mockSocket.emit(SocketEvents.MESSAGE_RECEIVE, messageData);
   });
 
   it('should handle typing events', (done) => {
@@ -167,14 +181,18 @@ describe('WebSocketService', () => {
       conversationId: 'conv-123'
     };
     
-    service.typingStart$.subscribe(data => {
-      if (data) {
-        expect(data).toEqual(typingData);
-        done();
-      }
+    // Use effect to watch signal changes
+    import('@angular/core').then(({ effect }) => {
+      const cleanup = effect(() => {
+        const data = service.typingStart();
+        if (data) {
+          expect(data).toEqual(typingData);
+          done();
+        }
+      });
+      
+      mockSocket.emit(SocketEvents.TYPING_START, typingData);
     });
-    
-    mockSocket.emit(SocketEvents.TYPING_START, typingData);
   });
 
   it('should join conversation', () => {
@@ -204,13 +222,8 @@ describe('WebSocketService', () => {
   it('should clear data', () => {
     service.clearData();
     
-    service.messageReceive$.subscribe(data => {
-      expect(data).toBeNull();
-    });
-    
-    service.typingStart$.subscribe(data => {
-      expect(data).toBeNull();
-    });
+    expect(service.messageReceive()).toBeNull();
+    expect(service.typingStart()).toBeNull();
   });
 
   it('should check connection status', () => {

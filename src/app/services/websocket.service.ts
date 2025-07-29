@@ -1,5 +1,4 @@
-import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { Injectable, inject, signal, computed, effect, untracked } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Message } from '../models/message.model';
 import { Auth } from './auth';
@@ -43,75 +42,81 @@ import {
   providedIn: 'root'
 })
 export class WebSocketService {
-  private auth = inject(Auth);
-  private socket: Socket | null = null;
-  private baseUrl = 'http://localhost:3000';
+  // Constants
+  private static readonly DEFAULT_BASE_URL = 'http://localhost:3000';
+  private static readonly SOCKET_TRANSPORTS = ['websocket', 'polling'];
+  private static readonly CONNECTION_CONFIG = {
+    upgrade: true,
+    autoConnect: true
+  };
 
-  // User status tracking
+  // Dependencies
+  private auth = inject(Auth);
+
+  // Core Properties
+  private socket: Socket | null = null;
+  private baseUrl = WebSocketService.DEFAULT_BASE_URL;
+
+  // User Status Tracking
   private onlineUsersMap = new Map<string, OnlineUser>();
   
-  // Subscription management
-  private typingMappingSubscriptions: any[] = [];
+  // Signal-based State Management
+  private _messageReceive = signal<MessageReceiveData | null>(null);
+  private _messageDeleted = signal<MessageDeletedData | null>(null);
+  private _messageError = signal<MessageErrorData | null>(null);
+  
+  private _typingStart = signal<TypingStartEmitData | null>(null);
+  private _typingStop = signal<TypingStopEmitData | null>(null);
+  
+  private _userOnline = signal<UserOnlineData | null>(null);
+  private _userOffline = signal<UserOfflineData | null>(null);
+  private _userStatusUpdate = signal<UserStatusUpdateData | null>(null);
+  private _onlineUsersList = signal<OnlineUser[]>([]);
+  
+  private _messagesRead = signal<MessagesReadData | null>(null);
+  
+  private _callIncoming = signal<CallIncomingData | null>(null);
+  private _callAnswered = signal<CallAnsweredData | null>(null);
+  private _callEnded = signal<CallEndedData | null>(null);
+  
+  private _webrtcOffer = signal<WebRTCOfferEmitData | null>(null);
+  private _webrtcAnswer = signal<WebRTCAnswerEmitData | null>(null);
+  private _webrtcIceCandidate = signal<WebRTCIceCandidateEmitData | null>(null);
+  
+  private _connectionStatus = signal<boolean>(false);
+  
+  // Legacy typing for backward compatibility
+  private _legacyTyping = signal<TypingEvent | null>(null);
 
-  // ...existing code...
-  private messageReceiveSubject = new BehaviorSubject<MessageReceiveData | null>(null);
-  private messageDeletedSubject = new BehaviorSubject<MessageDeletedData | null>(null);
-  private messageErrorSubject = new BehaviorSubject<MessageErrorData | null>(null);
-  
-  private typingStartSubject = new BehaviorSubject<TypingStartEmitData | null>(null);
-  private typingStopSubject = new BehaviorSubject<TypingStopEmitData | null>(null);
-  
-  private userOnlineSubject = new BehaviorSubject<UserOnlineData | null>(null);
-  private userOfflineSubject = new BehaviorSubject<UserOfflineData | null>(null);
-  private userStatusUpdateSubject = new BehaviorSubject<UserStatusUpdateData | null>(null);
-  private onlineUsersListSubject = new BehaviorSubject<OnlineUser[]>([]);
-  
-  private messagesReadSubject = new BehaviorSubject<MessagesReadData | null>(null);
-  
-  private callIncomingSubject = new BehaviorSubject<CallIncomingData | null>(null);
-  private callAnsweredSubject = new BehaviorSubject<CallAnsweredData | null>(null);
-  private callEndedSubject = new BehaviorSubject<CallEndedData | null>(null);
-  
-  private webrtcOfferSubject = new BehaviorSubject<WebRTCOfferEmitData | null>(null);
-  private webrtcAnswerSubject = new BehaviorSubject<WebRTCAnswerEmitData | null>(null);
-  private webrtcIceCandidateSubject = new BehaviorSubject<WebRTCIceCandidateEmitData | null>(null);
-  
-  private connectionStatusSubject = new BehaviorSubject<boolean>(false);
+  // Public Signal Accessors
+  readonly messageReceive = this._messageReceive.asReadonly();
+  readonly messageDeleted = this._messageDeleted.asReadonly();
+  readonly messageError = this._messageError.asReadonly();
+  readonly typingStart = this._typingStart.asReadonly();
+  readonly typingStop = this._typingStop.asReadonly();
+  readonly userOnline = this._userOnline.asReadonly();
+  readonly userOffline = this._userOffline.asReadonly();
+  readonly userStatusUpdate = this._userStatusUpdate.asReadonly();
+  readonly onlineUsersList = this._onlineUsersList.asReadonly();
+  readonly messagesRead = this._messagesRead.asReadonly();
+  readonly callIncoming = this._callIncoming.asReadonly();
+  readonly callAnswered = this._callAnswered.asReadonly();
+  readonly callEnded = this._callEnded.asReadonly();
+  readonly webrtcOffer = this._webrtcOffer.asReadonly();
+  readonly webrtcAnswer = this._webrtcAnswer.asReadonly();
+  readonly webrtcIceCandidate = this._webrtcIceCandidate.asReadonly();
+  readonly connectionStatus = this._connectionStatus.asReadonly();
+  readonly legacyTyping = this._legacyTyping.asReadonly();
 
-  // Public observables
-  messageReceive$ = this.messageReceiveSubject.asObservable();
-  messageDeleted$ = this.messageDeletedSubject.asObservable();
-  messageError$ = this.messageErrorSubject.asObservable();
-  
-  typingStart$ = this.typingStartSubject.asObservable();
-  typingStop$ = this.typingStopSubject.asObservable();
-  
-  userOnline$ = this.userOnlineSubject.asObservable();
-  userOffline$ = this.userOfflineSubject.asObservable();
-  userStatusUpdate$ = this.userStatusUpdateSubject.asObservable();
-  onlineUsersList$ = this.onlineUsersListSubject.asObservable();
-  
-  messagesRead$ = this.messagesReadSubject.asObservable();
-  
-  callIncoming$ = this.callIncomingSubject.asObservable();
-  callAnswered$ = this.callAnsweredSubject.asObservable();
-  callEnded$ = this.callEndedSubject.asObservable();
-  
-  webrtcOffer$ = this.webrtcOfferSubject.asObservable();
-  webrtcAnswer$ = this.webrtcAnswerSubject.asObservable();
-  webrtcIceCandidate$ = this.webrtcIceCandidateSubject.asObservable();
-  
-  connectionStatus$ = this.connectionStatusSubject.asObservable();
+  // Computed Signals
+  readonly connectedStatus = computed(() => this._connectionStatus());
+  readonly onlineUsersCount = computed(() => this._onlineUsersList().length);
+  readonly hasActiveTyping = computed(() => this._legacyTyping()?.isTyping === true);
 
-  // Legacy observables for backward compatibility
-  message$ = this.messageReceiveSubject.asObservable();
-  private legacyTypingSubject = new BehaviorSubject<TypingEvent | null>(null);
-  typing$ = this.legacyTypingSubject.asObservable();
-  userStatus$ = new BehaviorSubject<UserStatusEvent | null>(null).asObservable();
+  constructor() {
+    this.setupLegacyTypingMapping();
+  }
 
-  /**
-   * Initialize Socket.IO connection
-   */
   connect(): void {
     const token = this.auth.token();
     if (!token) {
@@ -124,134 +129,119 @@ export class WebSocketService {
         auth: {
           token: token
         },
-        transports: ['websocket', 'polling'],
-        upgrade: true,
-        autoConnect: true
+        transports: WebSocketService.SOCKET_TRANSPORTS,
+        ...WebSocketService.CONNECTION_CONFIG
       });
 
       this.setupEventListeners();
-      this.setupLegacyTypingMapping();
     } catch (error) {
       console.error('Error creating Socket.IO connection:', error);
     }
   }
 
-  /**
-   * Disconnect Socket.IO
-   */
   disconnect(): void {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
     }
     
-    // Cleanup typing mapping subscriptions
-    this.typingMappingSubscriptions.forEach(sub => sub.unsubscribe());
-    this.typingMappingSubscriptions = [];
-    
-    this.connectionStatusSubject.next(false);
+    this._connectionStatus.set(false);
   }
 
-  /**
-   * Setup Socket.IO event listeners
-   */
   private setupEventListeners(): void {
     if (!this.socket) return;
 
     // Connection events
     this.socket.on('connect', () => {
-      this.connectionStatusSubject.next(true);
+      this._connectionStatus.set(true);
     });
 
     this.socket.on('disconnect', (reason) => {
-      this.connectionStatusSubject.next(false);
+      this._connectionStatus.set(false);
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('Socket.IO connection error:', error);
-      this.connectionStatusSubject.next(false);
+      this._connectionStatus.set(false);
     });
 
     // Message events
     this.socket.on(SocketEvents.MESSAGE_RECEIVE, (data: MessageReceiveData) => {
-      this.messageReceiveSubject.next(data);
+      this._messageReceive.set(data);
     });
 
     this.socket.on(SocketEvents.MESSAGE_ERROR, (data: MessageErrorData) => {
-      this.messageErrorSubject.next(data);
+      this._messageError.set(data);
     });
 
     this.socket.on(SocketEvents.MESSAGE_DELETED, (data: MessageDeletedData) => {
-      this.messageDeletedSubject.next(data);
+      this._messageDeleted.set(data);
     });
 
     // Typing events
     this.socket.on(SocketEvents.TYPING_START, (data: TypingStartEmitData) => {
-      this.typingStartSubject.next(data);
+      this._typingStart.set(data);
     });
 
     this.socket.on(SocketEvents.TYPING_STOP, (data: TypingStopEmitData) => {
-      this.typingStopSubject.next(data);
+      this._typingStop.set(data);
     });
 
     // User status events
     this.socket.on(SocketEvents.USER_ONLINE, (data: UserOnlineData) => {
-      this.userOnlineSubject.next(data);
+      this._userOnline.set(data);
       this.updateOnlineUser(data.userId, 'online');
     });
 
     this.socket.on(SocketEvents.USER_OFFLINE, (data: UserOfflineData) => {
-      this.userOfflineSubject.next(data);
+      this._userOffline.set(data);
       this.updateOnlineUser(data.userId, 'offline', data.lastSeen);
     });
 
     this.socket.on(SocketEvents.USER_STATUS_UPDATE_EMIT, (data: UserStatusUpdateData) => {
-      this.userStatusUpdateSubject.next(data);
+      this._userStatusUpdate.set(data);
       this.updateOnlineUser(data.userId, data.status, data.timestamp);
     });
 
     this.socket.on(SocketEvents.USERS_ONLINE_LIST, (data: OnlineUser[]) => {
-      this.onlineUsersListSubject.next(data);
+      this._onlineUsersList.set(data);
       this.updateOnlineUsersFromList(data);
     });
 
     // Message read events
     this.socket.on(SocketEvents.MESSAGES_READ, (data: MessagesReadData) => {
-      this.messagesReadSubject.next(data);
+      this._messagesRead.set(data);
     });
 
     // Call events
     this.socket.on(SocketEvents.CALL_INCOMING, (data: CallIncomingData) => {
-      this.callIncomingSubject.next(data);
+      this._callIncoming.set(data);
     });
 
     this.socket.on(SocketEvents.CALL_ANSWERED, (data: CallAnsweredData) => {
-      this.callAnsweredSubject.next(data);
+      this._callAnswered.set(data);
     });
 
     this.socket.on(SocketEvents.CALL_ENDED, (data: CallEndedData) => {
-      this.callEndedSubject.next(data);
+      this._callEnded.set(data);
     });
 
     // WebRTC events
     this.socket.on(SocketEvents.WEBRTC_OFFER, (data: WebRTCOfferEmitData) => {
-      this.webrtcOfferSubject.next(data);
+      this._webrtcOffer.set(data);
     });
 
     this.socket.on(SocketEvents.WEBRTC_ANSWER, (data: WebRTCAnswerEmitData) => {
-      this.webrtcAnswerSubject.next(data);
+      this._webrtcAnswer.set(data);
     });
 
     this.socket.on(SocketEvents.WEBRTC_ICE_CANDIDATE, (data: WebRTCIceCandidateEmitData) => {
-      this.webrtcIceCandidateSubject.next(data);
+      this._webrtcIceCandidate.set(data);
     });
   }
 
-  // ============ Message Methods ============
+  // Message Methods
 
-  /**
-   * Send a message
-   */
   sendMessage(data: MessageSendData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.MESSAGE_SEND, data);
@@ -260,101 +250,68 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Delete a message
-   */
   deleteMessage(data: MessageDeleteData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.MESSAGE_DELETE, data);
     }
   }
 
-  // ============ Conversation Methods ============
+  // Conversation Methods
 
-  /**
-   * Join a conversation room
-   */
   joinConversation(conversationId: string): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.CONVERSATION_JOIN, conversationId);
     }
   }
 
-  /**
-   * Leave a conversation room
-   */
   leaveConversation(conversationId: string): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.CONVERSATION_LEAVE, conversationId);
     }
   }
 
-  // ============ Typing Methods ============
+  // Typing Methods
 
-  /**
-   * Start typing indicator
-   */
   startTyping(data: TypingStartData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.TYPING_START, data);
     }
   }
 
-  /**
-   * Stop typing indicator
-   */
   stopTyping(data: TypingStopData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.TYPING_STOP, data);
     }
   }
 
-  // ============ User Status Methods ============
+  // User Status Methods
 
-  /**
-   * Update user status
-   */
   updateUserStatus(status: 'online' | 'offline'): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.USER_STATUS_UPDATE, { status });
     }
   }
 
-  /**
-   * Get online users list
-   */
   getOnlineUsers(): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.USERS_GET_ONLINE);
     }
   }
 
-  /**
-   * Check if a user is online
-   */
   isUserOnline(userId: string): boolean {
     const user = this.onlineUsersMap.get(userId);
     return user?.status === 'online';
   }
 
-  /**
-   * Get user's last seen time
-   */
   getUserLastSeen(userId: string): Date | null {
     const user = this.onlineUsersMap.get(userId);
     return user?.lastSeen || null;
   }
 
-  /**
-   * Get all online users
-   */
   getAllOnlineUsers(): OnlineUser[] {
     return Array.from(this.onlineUsersMap.values()).filter(user => user.status === 'online');
   }
 
-  /**
-   * Update online user in map
-   */
   private updateOnlineUser(userId: string, status: 'online' | 'offline', lastSeen?: Date): void {
     const existingUser = this.onlineUsersMap.get(userId);
     
@@ -373,9 +330,6 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Update online users from list
-   */
   private updateOnlineUsersFromList(users: OnlineUser[]): void {
     this.onlineUsersMap.clear();
     users.forEach(user => {
@@ -383,117 +337,87 @@ export class WebSocketService {
     });
   }
 
-  // ============ Message Read Methods ============
+  // Message Read Methods
 
-  /**
-   * Mark messages as read
-   */
   markMessagesAsRead(data: MessagesMarkReadData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.MESSAGES_MARK_READ, data);
     }
   }
 
-  // ============ Call Methods ============
+  // Call Methods
 
-  /**
-   * Initiate a call
-   */
   initiateCall(data: CallInitiateData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.CALL_INITIATE, data);
     }
   }
 
-  /**
-   * Answer a call
-   */
   answerCall(data: CallAnswerData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.CALL_ANSWER, data);
     }
   }
 
-  /**
-   * End a call
-   */
   endCall(data: CallEndData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.CALL_END, data);
     }
   }
 
-  // ============ WebRTC Methods ============
+  // WebRTC Methods
 
-  /**
-   * Send WebRTC offer
-   */
   sendWebRTCOffer(data: WebRTCOfferData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.WEBRTC_OFFER, data);
     }
   }
 
-  /**
-   * Send WebRTC answer
-   */
   sendWebRTCAnswer(data: WebRTCAnswerData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.WEBRTC_ANSWER, data);
     }
   }
 
-  /**
-   * Send WebRTC ICE candidate
-   */
   sendWebRTCIceCandidate(data: WebRTCIceCandidateData): void {
     if (this.isConnected()) {
       this.socket?.emit(SocketEvents.WEBRTC_ICE_CANDIDATE, data);
     }
   }
 
-  // ============ Utility Methods ============
+  // Utility Methods
 
-  /**
-   * Get current connection status
-   */
   isConnected(): boolean {
     return this.socket?.connected || false;
   }
 
-  /**
-   * Clear all subjects (useful for logout)
-   */
   clearData(): void {
-    this.messageReceiveSubject.next(null);
-    this.messageDeletedSubject.next(null);
-    this.messageErrorSubject.next(null);
-    this.typingStartSubject.next(null);
-    this.typingStopSubject.next(null);
-    this.userOnlineSubject.next(null);
-    this.userOfflineSubject.next(null);
-    this.userStatusUpdateSubject.next(null);
-    this.onlineUsersListSubject.next([]);
-    this.messagesReadSubject.next(null);
-    this.callIncomingSubject.next(null);
-    this.callAnsweredSubject.next(null);
-    this.callEndedSubject.next(null);
-    this.webrtcOfferSubject.next(null);
-    this.webrtcAnswerSubject.next(null);
-    this.webrtcIceCandidateSubject.next(null);
+    this._messageReceive.set(null);
+    this._messageDeleted.set(null);
+    this._messageError.set(null);
+    this._typingStart.set(null);
+    this._typingStop.set(null);
+    this._userOnline.set(null);
+    this._userOffline.set(null);
+    this._userStatusUpdate.set(null);
+    this._onlineUsersList.set([]);
+    this._messagesRead.set(null);
+    this._callIncoming.set(null);
+    this._callAnswered.set(null);
+    this._callEnded.set(null);
+    this._webrtcOffer.set(null);
+    this._webrtcAnswer.set(null);
+    this._webrtcIceCandidate.set(null);
     
-    // Clear legacy typing subject
-    this.legacyTypingSubject.next(null);
+    // Clear legacy typing signal
+    this._legacyTyping.set(null);
     
     // Clear user status data
     this.onlineUsersMap.clear();
   }
 
-  // ============ Legacy Methods for Backward Compatibility ============
+  // Legacy Methods for Backward Compatibility
 
-  /**
-   * Legacy method for sending typing indicator
-   */
   sendTyping(conversationId: string, isTyping: boolean): void {
     if (isTyping) {
       this.startTyping({ conversationId, username: 'Current User' });
@@ -502,40 +426,37 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Setup legacy typing event mapping for backward compatibility
-   */
   private setupLegacyTypingMapping(): void {
-    // Clear any existing subscriptions
-    this.typingMappingSubscriptions.forEach(sub => sub.unsubscribe());
-    this.typingMappingSubscriptions = [];
-
-    // Map typingStart$ to legacy typing$ observable
-    const startSub = this.typingStart$.subscribe(typingStart => {
+    // Map typingStart signal to legacy typing signal
+    effect(() => {
+      const typingStart = this._typingStart();
       if (typingStart) {
-        const legacyEvent = {
-          conversationId: typingStart.conversationId,
-          userId: typingStart.userId,
-          userName: typingStart.username,
-          isTyping: true
-        };
-        this.legacyTypingSubject.next(legacyEvent);
+        untracked(() => {
+          const legacyEvent: TypingEvent = {
+            conversationId: typingStart.conversationId,
+            userId: typingStart.userId,
+            userName: typingStart.username,
+            isTyping: true
+          };
+          this._legacyTyping.set(legacyEvent);
+        });
       }
     });
 
-    // Map typingStop$ to legacy typing$ observable
-    const stopSub = this.typingStop$.subscribe(typingStop => {
+    // Map typingStop signal to legacy typing signal
+    effect(() => {
+      const typingStop = this._typingStop();
       if (typingStop) {
-        const legacyEvent = {
-          conversationId: typingStop.conversationId,
-          userId: typingStop.userId,
-          userName: 'Unknown User', // TypingStopEmitData doesn't have username
-          isTyping: false
-        };
-        this.legacyTypingSubject.next(legacyEvent);
+        untracked(() => {
+          const legacyEvent: TypingEvent = {
+            conversationId: typingStop.conversationId,
+            userId: typingStop.userId,
+            userName: 'Unknown User', // TypingStopEmitData doesn't have username
+            isTyping: false
+          };
+          this._legacyTyping.set(legacyEvent);
+        });
       }
     });
-
-    this.typingMappingSubscriptions.push(startSub, stopSub);
   }
 }

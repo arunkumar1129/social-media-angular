@@ -12,6 +12,7 @@ import { Menu } from 'primeng/menu';
 import { User } from '../../models/user.model';
 import { Auth } from '../../services/auth';
 import { UserService } from '../../services/user-service';
+import { ConversationService } from '../../services/conversation.service';
 
 @Component({
   selector: 'app-profile-menu',
@@ -34,6 +35,7 @@ export class ProfileMenuComponent {
   
   private auth = inject(Auth);
   private userService = inject(UserService);
+  private conversationService = inject(ConversationService);
   private messageService = inject(MessageService);
 
   user = input<User | undefined>();
@@ -137,6 +139,7 @@ export class ProfileMenuComponent {
   logout() {
     this.auth.logout().subscribe(() => {
         this.userService.logout();
+        this.conversationService.disconnect();
     });
   }
 

@@ -80,7 +80,7 @@
               {{ message.content }}
             </div>
             <div class="message-time">
-              {{ formatMessageTime(message.timestamp) }}
+              {{ message.timestamp | date: 'hh:mm a' }}
             </div>
           </div>
         </div>

@@ -166,10 +166,6 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     return this.conversation()!.otherParticipant?.avatarUrl || 'images/default-avatar.png';
   }
 
-  formatMessageTime(timestamp: Date): string {
-    return this.timeUtils.formatMessageTime(timestamp);
-  }
-
   private scrollToBottom() {
     // This will be implemented to scroll the message container to bottom
     const messageContainer = document.querySelector('.messages-container .p-scrollpanel-content');
