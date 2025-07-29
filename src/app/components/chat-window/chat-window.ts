@@ -15,6 +15,7 @@ import { ConversationService } from '../../services/conversation.service';
 import { Message, MessageSentEvent } from '../../models/message.model';
 import { TimeUtilsService } from '../../services/time-utils.service';
 import { WebSocketService } from '../../services/websocket.service';
+import { WindowFocusService } from '../../services/window-focus.service';
 
 @Component({
   selector: 'app-chat-window',
@@ -37,6 +38,7 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
   private conversationService = inject(ConversationService);
   private socketService = inject(WebSocketService);
   private timeUtils = inject(TimeUtilsService);
+  private windowFocusService = inject(WindowFocusService);
   private messageSubscription?: Subscription;
   private typingTimeout?: ReturnType<typeof setTimeout>;
 
@@ -64,11 +66,41 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
         setTimeout(() => this.scrollToBottom(), 100);
       }
     });
+
+    // Mark messages as read when conversation is active and has unread messages
+    effect(() => {
+      const conversation = this.conversation();
+      const isWindowFocused = this.windowFocusService.isWindowFocused();
+      
+      if (conversation && conversation.unReadCount > 0 && isWindowFocused) {
+        // Use a slight delay to ensure the conversation is fully loaded
+        setTimeout(() => {
+          this.conversationService.markConversationAsRead(conversation._id);
+        }, 500);
+      }
+    });
   }
 
   ngOnInit() {
     // Subscribe to messages from the service
     
+    // Add scroll event listener to mark messages as read when visible
+    setTimeout(() => {
+      const messageContainer = document.querySelector('.messages-container .p-scrollpanel-content');
+      if (messageContainer) {
+        messageContainer.addEventListener('scroll', () => {
+          this.checkAndMarkMessagesAsRead();
+        });
+      }
+    }, 1000);
+  }
+
+  private checkAndMarkMessagesAsRead(): void {
+    const conversation = this.conversation();
+    if (conversation && conversation.unReadCount > 0 && this.windowFocusService.isWindowFocused()) {
+      // Mark as read if user has scrolled or conversation is visible
+      this.conversationService.markConversationAsRead(conversation._id);
+    }
   }
 
   ngOnDestroy() {

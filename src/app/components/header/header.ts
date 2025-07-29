@@ -1,9 +1,11 @@
-import { Component, effect, input, ViewChild } from '@angular/core';
+import { Component, effect, input, ViewChild, inject } from '@angular/core';
 import { Avatar } from 'primeng/avatar';
 import { Toolbar } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
+import { BadgeModule } from 'primeng/badge';
 import { User } from '../../models/user.model';
 import { ProfileMenuComponent } from '../profile-menu/profile-menu';
+import { ConversationService } from '../../services/conversation.service';
 
 @Component({
   selector: 'app-header',
@@ -11,6 +13,7 @@ import { ProfileMenuComponent } from '../profile-menu/profile-menu';
     Toolbar,
     Avatar,
     ButtonModule,
+    BadgeModule,
     ProfileMenuComponent
   ],
   templateUrl: './header.html',
@@ -19,16 +22,13 @@ import { ProfileMenuComponent } from '../profile-menu/profile-menu';
 export class Header {
   @ViewChild('profileMenu') profileMenuComponent!: ProfileMenuComponent;
   
+  private conversationService = inject(ConversationService);
+  
   user = input<User | undefined>(undefined);
-
-  constructor() {
-    effect(() => {
-      // This effect runs when the user input changes
-      if (this.user()) {
-        console.log('User profile loaded:', this.user());
-      }
-    });
-  }
+  
+  // Computed signals for unread counts
+  totalUnreadCount = this.conversationService.totalUnreadCount;
+  unreadConversationsCount = this.conversationService.unreadConversationsCount;
 
   toggleSidebar() {
     const sidebar = document.querySelector('.layout-sidebar');

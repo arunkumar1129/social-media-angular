@@ -3,7 +3,6 @@ import { inject, Injectable, signal } from '@angular/core';
 import { User } from '../models/user.model';
 import { tap, Observable } from 'rxjs';
 import { ApiResponse } from '../models/api-response.model';
-import { ConversationService } from './conversation.service';
 import { WebSocketService } from './websocket.service';
 
 @Injectable({
@@ -12,7 +11,6 @@ import { WebSocketService } from './websocket.service';
 export class UserService {
   private http = inject(HttpClient);
   user = signal<User | undefined>(undefined);
-  private conversationService = inject(ConversationService);
   private socketService = inject(WebSocketService);
 
   getUserProfile() {
@@ -46,7 +44,6 @@ export class UserService {
   }
 
   logout() {
-    this.conversationService.clearData();
     this.socketService.clearData();
     this.socketService.disconnect();
   }

@@ -27,7 +27,7 @@ describe('ConversationService', () => {
         readBy: []
     },
     lastUpdated: new Date(),
-    unreadCount: 2,
+    unReadCount: 2,
     isGroup: false,
     displayName: 'John Doe'
   };

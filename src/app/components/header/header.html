@@ -10,7 +10,17 @@
       class="p-button-text p-button-plain text-primary-50 hover:bg-primary-600 focus:ring-2 focus:ring-primary-300 rounded-full p-2 mr-3"
       aria-label="Open chat list sidebar"
     ></button>
-    <span class="text-xl font-semibold">Messenger App</span>
+    <div class="flex items-center">
+      <span class="text-xl font-semibold">Messenger App</span>
+      @if (totalUnreadCount() > 0) {
+        <p-badge 
+          [value]="totalUnreadCount().toString()" 
+          severity="danger" 
+          class="ml-2"
+          [style]="{'min-width': '20px', 'height': '20px'}"
+        ></p-badge>
+      }
+    </div>
   </div>
 
   <div class="p-toolbar-group-end flex items-center">

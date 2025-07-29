@@ -5,6 +5,7 @@ import { Conversation } from '../models/conversation.model';
 import { ApiResponse } from '../models/api-response.model';
 import { Message, MessageSentEvent } from '../models/message.model';
 import { WebSocketService } from './websocket.service';
+import { UserService } from './user-service';
 import { MessageReceiveData } from '../models/websocket.model';
 import { TimeUtilsService } from './time-utils.service';
 
@@ -29,6 +30,7 @@ export interface SendMessageRequest {
 export class ConversationService {
   private http = inject(HttpClient);
   private wsService = inject(WebSocketService);
+  private userService = inject(UserService);
   private apiUrl = 'http://localhost:3000/api';
   private destroy$ = new Subject<void>();
   
@@ -55,6 +57,16 @@ export class ConversationService {
     return Array.from(conversationTyping.entries())
       .filter(([userId, isTyping]) => isTyping)
       .map(([userId]) => userId);
+  });
+
+  // Computed signal for total unread count across all conversations
+  totalUnreadCount = computed(() => {
+    return this.conversations().reduce((total, conversation) => total + conversation.unReadCount, 0);
+  });
+
+  // Computed signal for unread conversations count
+  unreadConversationsCount = computed(() => {
+    return this.conversations().filter(conversation => conversation.unReadCount > 0).length;
   });
 
   constructor() {
@@ -96,6 +108,15 @@ export class ConversationService {
       .subscribe(userOffline => {
         if (userOffline) {
           this.updateUserStatusInConversations(userOffline.userId, 'offline');
+        }
+      });
+
+    // Subscribe to message read events from WebSocket
+    this.wsService.messagesRead$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(messagesRead => {
+        if (messagesRead) {
+          this.handleMessagesRead(messagesRead.conversationId, messagesRead.userId);
         }
       });
 
@@ -312,6 +333,12 @@ export class ConversationService {
       this.wsService.joinConversation(conversationId);
       // Load messages for the selected conversation
       this.getMessages(conversationId).pipe(take(1)).subscribe();
+      
+      // Mark messages as read when conversation is selected
+      const conversation = this.conversations().find(c => c._id === conversationId);
+      if (conversation && conversation.unReadCount > 0) {
+        this.markConversationAsRead(conversationId);
+      }
     } else {
       this.messages.set([]);
     }
@@ -431,14 +458,23 @@ export class ConversationService {
   // Private helper methods
   private handleRealtimeMessage(message: MessageReceiveData): void {
     const currentMessages = this.messages();
+    const currentUserId = this.userService.user()?._id;
 
     // Check if message already exists (avoid duplicates)
     const messageExists = currentMessages.find(m => m._id === message._id);
     if (!messageExists) {
-      this.messages.set([...currentMessages, message]);
+      // Only add to current conversation messages if this is the selected conversation
+      if (this.selectedConversationId() === message.conversationId) {
+        this.messages.set([...currentMessages, message]);
+      }
 
-      // Update conversation's last message if it's for the current conversation
+      // Always update conversation's last message and unread count
       this.updateConversationLastMessage(message.conversationId, message);
+
+      // Increment unread count if message is not from current user and conversation is not selected
+      if (message.senderId !== currentUserId && this.selectedConversationId() !== message.conversationId) {
+        this.incrementUnreadCount(message.conversationId);
+      }
     }
   }
 
@@ -516,13 +552,13 @@ export class ConversationService {
     this.conversations.set([...updatedConversations]);
   }
 
-  private updateConversationUnreadCount(conversationId: string, unreadCount: number): void {
+  private updateConversationUnreadCount(conversationId: string, unReadCount: number): void {
     const currentConversations = this.conversations();
     const updatedConversations = currentConversations.map(conversation => {
       if (conversation._id === conversationId) {
         return {
           ...conversation,
-          unreadCount
+          unReadCount
         };
       }
       return conversation;
@@ -539,6 +575,36 @@ export class ConversationService {
       updatedConversations[index] = updatedConversation;
       this.conversations.set(updatedConversations);
     }
+  }
+
+  /**
+   * Handle messages read event from WebSocket
+   */
+  private handleMessagesRead(conversationId: string, userId: string): void {
+    // If it's the current user marking messages as read, we can clear the unread count
+    const currentUserId = this.userService.user()?._id;
+    if (userId === currentUserId) {
+      this.updateConversationUnreadCount(conversationId, 0);
+    }
+  }
+
+  /**
+   * Increment unread count for a conversation
+   */
+  private incrementUnreadCount(conversationId: string): void {
+    const currentConversations = this.conversations();
+    const conversation = currentConversations.find(c => c._id === conversationId);
+    if (conversation) {
+      this.updateConversationUnreadCount(conversationId, conversation.unReadCount + 1);
+    }
+  }
+
+  /**
+   * Mark messages as read for a conversation
+   */
+  markConversationAsRead(conversationId: string): void {
+    this.wsService.markMessagesAsRead({ conversationId });
+    this.updateConversationUnreadCount(conversationId, 0);
   }
 
   /**
