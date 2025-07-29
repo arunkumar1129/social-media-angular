@@ -1,7 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { TokenRequest, TokenResponse } from '../models/user.model';
 import { HttpClient } from '@angular/common/http';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs';
 import { ApiResponse } from '../models/api-response.model';
 import { Router } from '@angular/router';
@@ -37,8 +36,12 @@ export class Auth {
   }
 
   logout() {
-    this.token.set(undefined);
-    localStorage.removeItem('authToken');
-    this.router.navigate(['/login']);
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/auth/logout`).pipe(
+      tap((res) => {
+        this.token.set(undefined);
+        localStorage.removeItem('authToken');
+        this.router.navigate(['/login']);
+      })
+    )
   }
 }

@@ -1,6 +1,20 @@
 .chat-list-container {
   background: var(--p-surface-0);
 
+  .search-section {
+    .add-conversation-btn {
+      height: 44px; // Match input height
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .p-button-icon {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
   .conversations-list {
     background: var(--p-surface-0);
   }

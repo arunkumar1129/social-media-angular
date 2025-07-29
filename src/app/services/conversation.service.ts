@@ -163,6 +163,25 @@ export class ConversationService {
   }
 
   /**
+   * Create a direct conversation with a user
+   */
+  createDirectConversation(userId: string): Observable<ApiResponse<Conversation>> {
+    const request: CreateConversationRequest = {
+      participantIds: [userId],
+      isGroup: false
+    };
+    
+    return this.createConversation(request).pipe(
+      tap((response) => {
+        if (response.data) {
+          // Select the newly created conversation
+          this.selectedConversationId.set(response.data._id);
+        }
+      })
+    );
+  }
+
+  /**
    * Get messages for a specific conversation
    */
   getMessages(conversationId: string, page: number = 1, limit: number = 50): Observable<ApiResponse<Message[]>> {

@@ -7,8 +7,13 @@ import { BadgeModule } from 'primeng/badge';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { Conversation } from '../../models/conversation.model';
+import { User } from '../../models/user.model';
 import { TimeUtilsService } from '../../services/time-utils.service';
+import { ConversationService } from '../../services/conversation.service';
+import { ContactsDialogComponent } from '../contacts-dialog/contacts-dialog';
 
 @Component({
   selector: 'app-chat-list',
@@ -21,19 +26,24 @@ import { TimeUtilsService } from '../../services/time-utils.service';
     BadgeModule,
     InputTextModule,
     IconFieldModule,
-    InputIconModule
+    InputIconModule,
+    ButtonModule,
+    TooltipModule,
+    ContactsDialogComponent
   ],
   templateUrl: './chat-list.html',
   styleUrls: ['./chat-list.scss']
 })
 export class ChatListComponent implements OnInit, OnDestroy {
   private timeUtils = inject(TimeUtilsService);
+  private conversationService = inject(ConversationService);
 
   conversations = input<Conversation[]>([]);
   selectedConversationId = model<string | null>(null);
   previousConversationId = model<string | null>(null);
 
   searchTerm = signal('');
+  showContactsDialog = signal(false);
   isLoading: boolean = false;
 
   filteredConversations = computed(() => {
@@ -79,6 +89,24 @@ export class ChatListComponent implements OnInit, OnDestroy {
       return message;
     }
     return message.substring(0, maxLength) + '...';
+  }
+
+  onAddConversation(): void {
+    this.showContactsDialog.set(true);
+  }
+
+  onUserSelected(user: User): void {
+    // Create a new direct conversation with the selected user
+    this.conversationService.createDirectConversation(user._id || user.id).subscribe({
+      next: (response) => {
+        // Conversation created and selected automatically by the service
+        this.showContactsDialog.set(false);
+      },
+      error: (error) => {
+        console.error('Error creating conversation:', error);
+        // Handle error - maybe show a toast notification
+      }
+    });
   }
 
   ngOnInit(): void {

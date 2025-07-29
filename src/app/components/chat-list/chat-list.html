@@ -1,18 +1,31 @@
 <div class="chat-list-container h-full flex flex-col">
-  <!-- Search Header -->
+  <!-- Header with Search and Add Button -->
   <div class="search-section p-4">
-    <p-iconField iconPosition="left" class="w-full">
-      <p-inputIcon>
-        <i class="pi pi-search"></i>
-      </p-inputIcon>
-      <input 
-        type="text" 
-        pInputText 
-        placeholder="Search conversations..." 
-        [(ngModel)]="searchTerm"
-        class="w-full"
-      />
-    </p-iconField>
+    <div class="flex gap-2 mb-3">
+      <p-iconField iconPosition="left" class="flex-1">
+        <p-inputIcon>
+          <i class="pi pi-search"></i>
+        </p-inputIcon>
+        <input 
+          type="text" 
+          pInputText 
+          placeholder="Search conversations..." 
+          [(ngModel)]="searchTerm"
+          class="w-full"
+        />
+      </p-iconField>
+      
+      <!-- Add Conversation Button -->
+      <p-button 
+        icon="pi pi-plus" 
+        [rounded]="true"
+        severity="info"
+        (onClick)="onAddConversation()"
+        pTooltip="Start new conversation"
+        tooltipPosition="bottom"
+        class="flex-shrink-0 add-conversation-btn">
+      </p-button>
+    </div>
   </div>
 
   <!-- Conversations List -->
@@ -85,4 +98,10 @@
       </ng-template>
     </p-listbox>
   </div>
+
+  <!-- Contacts Dialog -->
+  <app-contacts-dialog 
+    [(visible)]="showContactsDialog" 
+    (userSelected)="onUserSelected($event)">
+  </app-contacts-dialog>
 </div>

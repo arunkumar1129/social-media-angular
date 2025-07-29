@@ -1,0 +1,104 @@
+<!-- Profile Menu -->
+<p-menu #profileMenu [model]="menuItems" [popup]="true"></p-menu>
+
+<!-- Profile Dialog -->
+<p-dialog 
+  [(visible)]="showProfileDialog" 
+  [modal]="true" 
+  [closable]="true"
+  [dismissableMask]="true"
+  header="Profile Settings"
+  [style]="{width: '450px'}"
+  (onHide)="closeProfileDialog()">
+  
+  <div class="profile-content flex flex-col items-center text-center">
+    <!-- Current Avatar Display -->
+    <div class="avatar-section mb-6">
+      <div class="relative inline-block">
+        <p-avatar 
+          [image]="user()?.avatarUrl" 
+          [label]="!user()?.avatarUrl ? getAvatarLabel() : undefined"
+          size="xlarge" 
+          shape="circle"
+          class="border-4 border-primary-200">
+        </p-avatar>
+        
+        <!-- Upload overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+             (click)="fileUpload.choose()">
+          <i class="pi pi-camera text-white text-xl"></i>
+        </div>
+      </div>
+      
+      <h3 class="mt-4 text-xl font-semibold text-surface-900 dark:text-surface-0">
+        {{ user()?.displayName || user()?.username }}
+      </h3>
+      <p class="text-surface-600 dark:text-surface-300">
+        {{ user()?.username }}
+      </p>
+      <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">
+        {{ user()?.email }}
+      </p>
+    </div>
+
+    <!-- Avatar Upload Section -->
+    <div class="upload-section w-full">
+      <p-fileUpload 
+        #fileUpload
+        mode="basic" 
+        [auto]="true"
+        accept="image/*"
+        [maxFileSize]="5242880"
+        chooseLabel="Change Avatar"
+        chooseIcon="pi pi-upload"
+        [customUpload]="true"
+        (uploadHandler)="onAvatarUpload($event)"
+        (onSelect)="onAvatarSelect($event)"
+        [disabled]="uploadingAvatar()"
+        class="w-full">
+      </p-fileUpload>
+      
+      <div *ngIf="uploadingAvatar()" class="flex items-center justify-center mt-3">
+        <i class="pi pi-spin pi-spinner text-primary-500 mr-2"></i>
+        <span class="text-sm text-surface-600 dark:text-surface-300">Uploading...</span>
+      </div>
+    </div>
+
+    <!-- User Info -->
+    <div class="user-info w-full mt-6 p-4 bg-surface-50 dark:bg-surface-800 rounded-lg">
+      <div class="info-item flex justify-between items-center py-2 border-b border-surface-200 dark:border-surface-700">
+        <span class="font-medium text-surface-700 dark:text-surface-300">Status</span>
+        <span 
+          class="px-2 py-1 rounded-full text-xs font-medium"
+          [ngClass]="{
+            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': user()?.status === 'online',
+            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': user()?.status === 'offline'
+          }">
+          {{ user()?.status || 'offline' }}
+        </span>
+      </div>
+      
+      <div class="info-item flex justify-between items-center py-2">
+        <span class="font-medium text-surface-700 dark:text-surface-300">User ID</span>
+        <span class="text-sm text-surface-500 dark:text-surface-400 font-mono">
+          {{ user()?.id || user()?._id }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end">
+      <p-button 
+        label="Close" 
+        icon="pi pi-times" 
+        [text]="true"
+        (onClick)="closeProfileDialog()">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Toast messages -->
+<p-toast></p-toast>
