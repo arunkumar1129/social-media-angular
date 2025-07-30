@@ -67,6 +67,15 @@ export class ConversationService {
 
   constructor() {
     effect(() => {
+      const connected = this.wsService.connectedStatus();
+      if (connected) {
+        untracked(() => {
+          this.autoJoinConversations();
+        })
+      }
+    });
+
+    effect(() => {
       const message = this.wsService.messageReceive();
       if (message) {
         untracked(() => this.handleRealtimeMessage(message));
@@ -148,6 +157,7 @@ export class ConversationService {
         if (response.data) {
           const currentConversations = this.conversations();
           this.conversations.set([response.data, ...currentConversations]);
+          this.wsService.joinConversation(response.data._id);
         }
       })
     );
@@ -388,7 +398,8 @@ export class ConversationService {
             ...conversation,
             otherParticipant: {
               ...conversation.otherParticipant,
-              status
+              status,
+              lastSeen: new Date()
             }
           };
         }
@@ -424,7 +435,7 @@ export class ConversationService {
   private updateConversationLastMessage(conversationId: string, message: Message): void {
     this.updateConversationInMemory(conversationId, {
       lastMessage: { ...message },
-      lastUpdated: message.timestamp
+      updatedAt: message.timestamp
     });
   }
 
@@ -455,6 +466,17 @@ export class ConversationService {
     if (conversation) {
       this.updateConversationUnreadCount(conversationId, conversation.unReadCount + 1);
     }
+  }
+
+    // Add this method
+  private autoJoinConversations(): void {
+    // Join all user conversations for message reception
+    this.conversations().forEach(conversation => {
+      if (conversation._id) {
+        console.log(`Joining conversation: ${conversation._id}`);
+        this.wsService.joinConversation(conversation._id);
+      }
+    });
   }
 
   markConversationAsRead(conversationId: string): void {

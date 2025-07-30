@@ -36,15 +36,16 @@ export class Auth {
   }
 
   logout() {
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/auth/logout`).pipe(
+      tap((res) => {
+        this.clearSession();
+      })
+    );
+  }
+
+  clearSession() {
     this.token.set(undefined);
     localStorage.removeItem('authToken');
     this.router.navigate(['/login']);
-    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/auth/logout`).pipe(
-      tap((res) => {
-        this.token.set(undefined);
-        localStorage.removeItem('authToken');
-        this.router.navigate(['/login']);
-      })
-    );
   }
 }

@@ -16,6 +16,7 @@ import { Message, MessageSentEvent } from '../../models/message.model';
 import { TimeUtilsService } from '../../services/time-utils.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { WindowFocusService } from '../../services/window-focus.service';
+import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-chat-window',
@@ -29,7 +30,8 @@ import { WindowFocusService } from '../../services/window-focus.service';
     ScrollPanelModule,
     ToolbarModule,
     MenuModule,
-    BadgeModule
+    BadgeModule,
+    TimeAgoPipe
   ],
   templateUrl: './chat-window.html',
   styleUrls: ['./chat-window.scss']

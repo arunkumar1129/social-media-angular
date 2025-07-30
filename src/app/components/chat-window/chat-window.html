@@ -5,29 +5,21 @@
       <div class="flex items-center w-full">
         <!-- Avatar and Info -->
         <div class="flex items-center flex-1">
-          <p-avatar 
-            [image]="getAvatar()"
-            size="large"
-            shape="circle"
-            class="mr-3">
+          <p-avatar [image]="getAvatar()" size="large" shape="circle" class="mr-3">
           </p-avatar>
-          
+
           <div class="flex flex-col">
             <h3 class="font-semibold text-surface-900 dark:text-surface-0 m-0">
               {{ getDisplayName() }}
             </h3>
-            <span 
-              *ngIf="!conversation()!.isGroup" 
-              class="text-sm text-surface-500 dark:text-surface-400"
-              [ngClass]="{
+            <span *ngIf="!conversation()!.isGroup" class="text-sm text-surface-500 dark:text-surface-400" [ngClass]="{
                 'text-green-500': conversation()?.otherParticipant?.status === 'online',
                 'text-surface-500': conversation()?.otherParticipant?.status === 'offline'
               }">
-              {{ conversation()?.otherParticipant?.status }}
+              {{ conversation()?.otherParticipant?.status === 'offline' ?
+              'Last seen ' + (conversation()?.otherParticipant?.lastSeen | timeAgo) : 'online' }}
             </span>
-            <span 
-              *ngIf="conversation()!.isGroup" 
-              class="text-sm text-surface-500 dark:text-surface-400">
+            <span *ngIf="conversation()!.isGroup" class="text-sm text-surface-500 dark:text-surface-400">
               {{ conversation()!.participants.length }} members
             </span>
           </div>
@@ -35,26 +27,11 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-2">
-          <p-button 
-            icon="pi pi-phone" 
-            severity="secondary" 
-            [text]="true"
-            [rounded]="true"
-            class="p-button-sm">
+          <p-button icon="pi pi-phone" severity="secondary" [text]="true" [rounded]="true" class="p-button-sm">
           </p-button>
-          <p-button 
-            icon="pi pi-video" 
-            severity="secondary" 
-            [text]="true"
-            [rounded]="true"
-            class="p-button-sm">
+          <p-button icon="pi pi-video" severity="secondary" [text]="true" [rounded]="true" class="p-button-sm">
           </p-button>
-          <p-button 
-            icon="pi pi-ellipsis-v" 
-            severity="secondary" 
-            [text]="true"
-            [rounded]="true"
-            class="p-button-sm">
+          <p-button icon="pi pi-ellipsis-v" severity="secondary" [text]="true" [rounded]="true" class="p-button-sm">
           </p-button>
         </div>
       </div>
@@ -65,10 +42,7 @@
   <div class="messages-container flex-1 overflow-hidden">
     <p-scrollPanel [style]="{'width': '100%', 'height': '100%'}" styleClass="custom-scrollbar">
       <div class="messages-list p-4 space-y-4">
-        <div 
-          *ngFor="let message of messages(); trackBy: trackByMessageId" 
-          class="message-wrapper"
-          [ngClass]="{
+        <div *ngFor="let message of messages(); trackBy: trackByMessageId" class="message-wrapper" [ngClass]="{
             'message-own': message.senderId === user()?.id,
             'message-other': message.senderId !== user()?.id
           }">
@@ -84,11 +58,9 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Typing Indicator -->
-        <div 
-          *ngIf="isAnyoneTyping()" 
-          class="typing-indicator message-wrapper message-other">
+        <div *ngIf="isAnyoneTyping()" class="typing-indicator message-wrapper message-other">
           <div class="message-bubble bg-surface-100 dark:bg-surface-800 text-surface-500 dark:text-surface-400">
             <div class="typing-dots flex items-center space-x-1">
               <span class="typing-text">{{ getTypingText() }}</span>
@@ -106,37 +78,24 @@
 
   <!-- Message Input -->
   <div class="message-input-container">
-    <div class="flex items-end gap-3 p-4 bg-surface-0 dark:bg-surface-900 border-t border-surface-200 dark:border-surface-700">
+    <div
+      class="flex items-end gap-3 p-4 bg-surface-0 dark:bg-surface-900 border-t border-surface-200 dark:border-surface-700">
       <!-- Attachment Button -->
-      <p-button 
-        icon="pi pi-paperclip" 
-        severity="secondary" 
-        [text]="true"
-        [rounded]="true"
+      <p-button icon="pi pi-paperclip" severity="secondary" [text]="true" [rounded]="true"
         class="p-button-sm flex-shrink-0">
       </p-button>
 
       <!-- Message Input -->
       <div class="flex-1">
-        <textarea
-          pInputText
-          [(ngModel)]="newMessage"
-          (input)="onMessageInput()"
-          (keydown)="onKeyDown($event)"
-          placeholder="Type a message..."
-          rows="1"
+        <textarea pInputText [(ngModel)]="newMessage" (input)="onMessageInput()" (keydown)="onKeyDown($event)"
+          placeholder="Type a message..." rows="1"
           class="w-full resize-none border border-surface-300 dark:border-surface-600 rounded-lg p-3 bg-surface-0 dark:bg-surface-800 text-surface-900 dark:text-surface-0"
-          style="min-height: 44px; max-height: 120px;"
-          #messageInput>
+          style="min-height: 44px; max-height: 120px;" #messageInput>
         </textarea>
       </div>
 
       <!-- Send Button -->
-      <p-button 
-        icon="pi pi-send" 
-        [disabled]="!newMessage.trim()"
-        (onClick)="sendMessage()"
-        [rounded]="true"
+      <p-button icon="pi pi-send" [disabled]="!newMessage.trim()" (onClick)="sendMessage()" [rounded]="true"
         class="p-button-sm flex-shrink-0">
       </p-button>
     </div>

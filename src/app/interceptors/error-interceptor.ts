@@ -50,7 +50,7 @@ export class ErrorInterceptor implements HttpInterceptor {
                 });
                 
                 if (error.error?.message === "Invalid token." || error.status === 401) {
-                    this.auth.logout();
+                    this.auth.clearSession();
                 }
                 
                 return throwError(() => error);

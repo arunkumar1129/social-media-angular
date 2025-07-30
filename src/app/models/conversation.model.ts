@@ -6,6 +6,8 @@ export interface Conversation {
     participants: Partial<User>[]; // Array of user IDs
     lastMessage: Message; // Last message in the conversation
     lastUpdated: Date; // Timestamp of the last update
+    updatedAt: Date;
+    createdAt: Date;
     unReadCount: number; // Count of unread messages
     isGroup: boolean; // Indicates if the conversation is a group chat
     groupName?: string; // Optional group name for group conversations

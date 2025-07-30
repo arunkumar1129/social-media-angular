@@ -6,6 +6,7 @@ export interface User {
     avatarUrl: string;
     status: 'online' | 'offline';
     displayName: string;
+    lastSeen: Date;
 }
 
 export interface TokenRequest {

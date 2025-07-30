@@ -14,6 +14,7 @@ import { User } from '../../models/user.model';
 import { TimeUtilsService } from '../../services/time-utils.service';
 import { ConversationService } from '../../services/conversation.service';
 import { ContactsDialogComponent } from '../contacts-dialog/contacts-dialog';
+import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-chat-list',
@@ -29,7 +30,8 @@ import { ContactsDialogComponent } from '../contacts-dialog/contacts-dialog';
     InputIconModule,
     ButtonModule,
     TooltipModule,
-    ContactsDialogComponent
+    ContactsDialogComponent,
+    TimeAgoPipe
   ],
   templateUrl: './chat-list.html',
   styleUrls: ['./chat-list.scss']
@@ -48,20 +50,14 @@ export class ChatListComponent {
 
   filteredConversations = computed(() => {
     if (!this.searchTerm()) {
-      return this.conversations().map(conversation => ({
-        ...conversation,
-        lastUpdated: this.timeUtils.formatConversationTime(conversation.lastMessage.timestamp)
-      }));
+      return this.conversations();
     }
 
     return this.conversations().filter(conversation =>
       conversation.displayName?.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
       conversation.groupName?.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
       conversation.otherParticipant?.displayName?.toLowerCase().includes(this.searchTerm().toLowerCase())
-    ).map(conversation => ({
-      ...conversation,
-      lastUpdated: this.timeUtils.formatConversationTime(conversation.lastUpdated)
-    }));
+    );
   });
 
   onConversationSelect(conversationId: string): void {

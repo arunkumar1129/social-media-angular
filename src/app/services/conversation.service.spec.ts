@@ -14,22 +14,24 @@ describe('ConversationService', () => {
     _id: '1',
     participants: [{ _id: 'user1' }, { _id: 'user2' }],
     lastMessage: {
-        _id: 'msg1',
-        conversationId: '1',
-        senderId: {
-            _id: 'user2',
-            displayName: 'John Doe',
-            status: 'online' as const
-        },
-        content: 'Hello there!',
-        timestamp: new Date(),
-        type: 'text' as const,
-        readBy: []
+      _id: 'msg1',
+      conversationId: '1',
+      senderId: {
+        _id: 'user2',
+        displayName: 'John Doe',
+        status: 'online' as const
+      },
+      content: 'Hello there!',
+      timestamp: new Date(),
+      type: 'text' as const,
+      readBy: []
     },
     lastUpdated: new Date(),
     unReadCount: 2,
     isGroup: false,
-    displayName: 'John Doe'
+    displayName: 'John Doe',
+    updatedAt: new Date(),
+    createdAt: new Date()
   };
 
   const mockMessage: Message = {
