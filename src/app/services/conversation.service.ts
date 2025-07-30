@@ -39,6 +39,8 @@ export class ConversationService {
   selectedConversationId = signal<string | null>(null);
   previousConversationId = signal<string | null>(null);
 
+  isConversationRoute = signal<boolean>(false);
+
   selectedConversation = computed(() => this.conversations().find(c => c._id === this.selectedConversationId()) || null);
 
   messages = signal<Message[]>([]);

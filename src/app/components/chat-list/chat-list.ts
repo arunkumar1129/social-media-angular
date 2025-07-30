@@ -1,4 +1,4 @@
-import { Component, inject, input, computed, signal, model } from '@angular/core';
+import { Component, inject, input, computed, signal, model, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ListboxModule } from 'primeng/listbox';
@@ -11,7 +11,6 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { Conversation } from '../../models/conversation.model';
 import { User } from '../../models/user.model';
-import { TimeUtilsService } from '../../services/time-utils.service';
 import { ConversationService } from '../../services/conversation.service';
 import { ContactsDialogComponent } from '../contacts-dialog/contacts-dialog';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
@@ -37,7 +36,6 @@ import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
   styleUrls: ['./chat-list.scss']
 })
 export class ChatListComponent {
-  private timeUtils = inject(TimeUtilsService);
   private conversationService = inject(ConversationService);
 
   conversations = input<Conversation[]>([]);

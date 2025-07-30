@@ -1,4 +1,4 @@
-import { Component, inject, signal, model, output, input, ViewChild } from '@angular/core';
+import { Component, inject, signal, model, output, input, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MenuModule } from 'primeng/menu';
 import { DialogModule } from 'primeng/dialog';

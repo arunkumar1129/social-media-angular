@@ -196,10 +196,6 @@
         margin-right: 1rem;
       }
     }
-    
-    .message-input-container {
-      padding: 0.75rem 1rem !important;
-    }
   }
 }
 
@@ -250,4 +246,9 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.px-0 {
+  padding-left: 0;
+  padding-right: 0;
 }

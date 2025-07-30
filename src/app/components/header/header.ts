@@ -1,8 +1,8 @@
 import { Component, effect, input, ViewChild, inject } from '@angular/core';
 import { Avatar } from 'primeng/avatar';
 import { Toolbar } from 'primeng/toolbar';
-import { ButtonModule } from 'primeng/button';
-import { BadgeModule } from 'primeng/badge';
+import { Button } from 'primeng/button';
+import { Badge } from 'primeng/badge';
 import { User } from '../../models/user.model';
 import { ProfileMenuComponent } from '../profile-menu/profile-menu';
 import { ConversationService } from '../../services/conversation.service';
@@ -12,8 +12,7 @@ import { ConversationService } from '../../services/conversation.service';
   imports: [
     Toolbar,
     Avatar,
-    ButtonModule,
-    BadgeModule,
+    Badge,
     ProfileMenuComponent
   ],
   templateUrl: './header.html',

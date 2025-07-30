@@ -13,9 +13,9 @@ import { Conversation } from '../../models/conversation.model';
 import { User } from '../../models/user.model';
 import { ConversationService } from '../../services/conversation.service';
 import { Message, MessageSentEvent } from '../../models/message.model';
-import { TimeUtilsService } from '../../services/time-utils.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { WindowFocusService } from '../../services/window-focus.service';
+import { DeviceService } from '../../services/device.service';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 
 @Component({
@@ -39,14 +39,15 @@ import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 export class ChatWindowComponent implements OnInit, OnDestroy {
   private conversationService = inject(ConversationService);
   private socketService = inject(WebSocketService);
-  private timeUtils = inject(TimeUtilsService);
   private windowFocusService = inject(WindowFocusService);
+  deviceService = inject(DeviceService);
   private messageSubscription?: Subscription;
   private typingTimeout?: ReturnType<typeof setTimeout>;
 
   conversation = input<Conversation | null>(null);
   user = input<User | undefined>();
   @Output() messageSent = new EventEmitter<MessageSentEvent>();
+  @Output() backToList = new EventEmitter<void>();
 
   newMessage: string = '';
   messages = this.conversationService.messages;
@@ -245,5 +246,9 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
   getTypingText(): string {
     if (!this.conversation()) return '';
     return this.conversationService.getTypingText(this.conversation()!._id);
+  }
+
+  onBackToList(): void {
+    this.backToList.emit();
   }
 }

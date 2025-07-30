@@ -1,8 +1,20 @@
 <div class="chat-window-container h-full flex flex-col" *ngIf="conversation(); else noConversation">
   <!-- Chat Header -->
   <div class="chat-header">
-    <p-toolbar styleClass="border-none bg-surface-0 dark:bg-surface-900">
+    <p-toolbar styleClass="border-none bg-surface-0 dark:bg-surface-900 {{deviceService.isMobile() ? 'px-0' : ''}}">
       <div class="flex items-center w-full">
+        <!-- Back Button for Mobile/Tablet -->
+        <div class="flex items-center" [class.hidden]="deviceService.isDesktop()">
+          <p-button 
+            icon="pi pi-arrow-left" 
+            severity="secondary" 
+            [text]="true"
+            class="p-button-xs"
+            (onClick)="onBackToList()"
+            pTooltip="Back to conversations">
+          </p-button>
+        </div>
+        
         <!-- Avatar and Info -->
         <div class="flex items-center flex-1">
           <p-avatar [image]="getAvatar()" size="large" shape="circle" class="mr-3">
@@ -26,12 +38,12 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex items-center gap-2">
-          <p-button icon="pi pi-phone" severity="secondary" [text]="true" [rounded]="true" class="p-button-sm">
+        <div class="flex items-center">
+          <p-button icon="pi pi-phone" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
           </p-button>
-          <p-button icon="pi pi-video" severity="secondary" [text]="true" [rounded]="true" class="p-button-sm">
+          <p-button icon="pi pi-video" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
           </p-button>
-          <p-button icon="pi pi-ellipsis-v" severity="secondary" [text]="true" [rounded]="true" class="p-button-sm">
+          <p-button icon="pi pi-ellipsis-v" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
           </p-button>
         </div>
       </div>
@@ -79,10 +91,11 @@
   <!-- Message Input -->
   <div class="message-input-container">
     <div
-      class="flex items-end gap-3 p-4 bg-surface-0 dark:bg-surface-900 border-t border-surface-200 dark:border-surface-700">
+      class="message-input-wrapper flex items-end gap-3 p-4 bg-surface-0 dark:bg-surface-900 border-t border-surface-200 dark:border-surface-700"
+      [class.px-0]="deviceService.isMobileOrTablet()">
       <!-- Attachment Button -->
       <p-button icon="pi pi-paperclip" severity="secondary" [text]="true" [rounded]="true"
-        class="p-button-sm flex-shrink-0">
+        class="p-button-sm flex-shrink-0" [ngClass]="{'p-button-xs': deviceService.isMobileOrTablet()}">
       </p-button>
 
       <!-- Message Input -->
