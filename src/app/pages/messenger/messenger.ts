@@ -72,7 +72,8 @@ export class Messenger implements OnInit, OnDestroy {
   }
 
   onMessageSent(event: MessageSentEvent): void {
-    
+    // Message sent - no client-side notification logic needed
+    // The backend will handle sending push notifications to other participants
   }
 
   onBackToList(): void {

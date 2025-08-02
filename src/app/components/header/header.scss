@@ -14,9 +14,51 @@
   }
 }
 
-// Header specific styles
+// Navigation button styles for PrimeNG buttons
 :host {
   .p-toolbar {
     border-radius: 0 !important;
+  }
+  
+  // Navigation button styling
+  .nav-button {
+    color: white !important;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: white !important;
+    }
+    
+    &.active-nav {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      font-weight: 600;
+    }
+    
+    .p-button-label {
+      color: inherit !important;
+    }
+    
+    .p-button-icon {
+      color: inherit !important;
+    }
+  }
+  
+  // Mobile navigation menu styles
+  .p-menu {
+    .p-menuitem-link {
+      padding: 0.75rem 1rem;
+      
+      .p-menuitem-icon {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .hidden.sm\\:flex {
+    display: none !important;
   }
 }

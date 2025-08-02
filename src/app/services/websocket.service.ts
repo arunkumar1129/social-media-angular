@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed, effect, untracked } from '@angula
 import { io, Socket } from 'socket.io-client';
 import { Message } from '../models/message.model';
 import { Auth } from './auth';
+import { environment } from '../../environments/environment';
 import { 
   SocketEvents, 
   MessageSendData, 
@@ -43,7 +44,7 @@ import {
 })
 export class WebSocketService {
   // Constants
-  private static readonly DEFAULT_BASE_URL = 'http://localhost:3000';
+  private static readonly DEFAULT_BASE_URL = environment.wsUrl || 'ws://localhost:3000';
   private static readonly SOCKET_TRANSPORTS = ['websocket', 'polling'];
   private static readonly CONNECTION_CONFIG = {
     upgrade: true,

@@ -26,5 +26,32 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-performance",
+      "urls": [
+        "/api/conversations/**",
+        "/api/messages/**",
+        "/api/users/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 100,
+        "maxAge": "1h"
+      }
+    },
+    {
+      "name": "api-freshness",
+      "urls": [
+        "/api/auth/**",
+        "/api/push/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 10,
+        "maxAge": "5m"
+      }
+    }
   ]
 }

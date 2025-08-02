@@ -49,12 +49,10 @@ export const appConfig: ApplicationConfig = {
     ),
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    MessageService, provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          }), provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          })
+    MessageService,
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: true, // Enable in all environments for testing push notifications
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ]
 };

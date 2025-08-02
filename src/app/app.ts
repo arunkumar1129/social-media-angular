@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 
@@ -8,7 +8,11 @@ import { ToastModule } from 'primeng/toast';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
-  protected title = 'social-media-ang';
+export class App implements OnInit {
+  protected title = 'Talkio';
   sidebarVisible = false;
+  ngOnInit() {
+    // The NotificationIntegrationService is automatically initialized
+    // and will handle auth state changes and push notifications
+  }
 }

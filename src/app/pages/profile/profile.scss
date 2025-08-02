@@ -1,0 +1,113 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.profile-page {
+  min-height: 100vh;
+}
+
+// Avatar hover effects
+.relative:hover .absolute {
+  opacity: 1;
+}
+
+// Custom avatar sizing
+.w-32 {
+  width: 8rem !important;
+}
+
+.h-32 {
+  height: 8rem !important;
+}
+
+// Card spacing
+.p-card {
+  .p-card-content {
+    padding: 1.5rem;
+  }
+  
+  .p-card-header {
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+  }
+}
+
+// Form elements
+textarea {
+  font-family: inherit;
+  font-size: 0.875rem;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+  }
+}
+
+// Status tag styling
+.p-tag {
+  text-transform: capitalize;
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .profile-page {
+    .max-w-4xl {
+      margin: 0;
+      padding: 0 1rem;
+    }
+  }
+  
+  .p-card .p-card-content {
+    padding: 1rem;
+  }
+  
+  .flex.flex-col.lg\\:flex-row {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+// Loading state
+.pi-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Danger zone styling
+.border-red-200 {
+  border-color: rgb(254 202 202);
+}
+
+.dark .border-red-800 {
+  border-color: rgb(153 27 27);
+}
+
+.bg-red-50 {
+  background-color: rgb(254 242 242);
+}
+
+.dark .bg-red-950 {
+  background-color: rgb(69 10 10);
+}
+
+.text-red-900 {
+  color: rgb(127 29 29);
+}
+
+.dark .text-red-100 {
+  color: rgb(254 226 226);
+}
+
+.text-red-700 {
+  color: rgb(185 28 28);
+}
+
+.dark .text-red-300 {
+  color: rgb(252 165 165);
+}

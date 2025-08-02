@@ -4,12 +4,13 @@ import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
 import { ApiResponse } from '../models/api-response.model';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Auth {
-  apiUrl = 'http://localhost:3000/api';
+  private apiUrl = `${environment.apiUrl}/api`;
   private http = inject(HttpClient);
   private router = inject(Router);
   token = signal<string | undefined>(undefined);

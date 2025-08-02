@@ -4,9 +4,12 @@ export interface User {
     username: string;
     email: string;
     avatarUrl: string;
-    status: 'online' | 'offline';
+    status: 'online' | 'offline' | 'away' | 'busy';
     displayName: string;
+    bio?: string;
+    location?: string;
     lastSeen: Date;
+    createdAt?: Date;
 }
 
 export interface TokenRequest {

@@ -7,6 +7,7 @@ import { Message } from '../models/message.model';
 import { WebSocketService } from './websocket.service';
 import { UserService } from './user-service';
 import { MessageReceiveData } from '../models/websocket.model';
+import { environment } from '../../environments/environment';
 
 export interface CreateConversationRequest {
   participantIds: string[];
@@ -33,7 +34,7 @@ export class ConversationService {
   private http = inject(HttpClient);
   private wsService = inject(WebSocketService);
   private userService = inject(UserService);
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = `${environment.apiUrl}/api`;
   
   conversations = signal<Conversation[]>([]);
   selectedConversationId = signal<string | null>(null);

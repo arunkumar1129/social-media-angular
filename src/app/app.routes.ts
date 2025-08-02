@@ -23,6 +23,10 @@ export const routes: Routes = [
             {
                 path: 'messenger',
                 loadComponent: () => import('./pages/messenger/messenger').then(m => m.Messenger)
+            },
+            {
+                path: 'profile',
+                loadComponent: () => import('./pages/profile/profile').then(m => m.Profile)
             }
         ]
     }

@@ -1,9 +1,12 @@
 {
-  "name": "social-media-ang",
-  "short_name": "social-media-ang",
+  "name": "Talkio",
+  "short_name": "Talkio",
+  "description": "Real-time messaging and social media application",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
+  "theme_color": "#6366f1",
+  "background_color": "#ffffff",
   "icons": [
     {
       "src": "icons/icon-72x72.png",
