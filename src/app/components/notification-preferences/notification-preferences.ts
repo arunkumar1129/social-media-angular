@@ -2,7 +2,6 @@ import { Component, inject, model, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { ToggleButton } from 'primeng/togglebutton';
 import { Divider } from 'primeng/divider';
-import { Badge } from 'primeng/badge';
 import { PushNotificationService } from '../../services/push-notification.service';
 import { FormsModule } from '@angular/forms';
 
@@ -12,47 +11,24 @@ import { FormsModule } from '@angular/forms';
     Button,
     ToggleButton,
     Divider,
-    Badge,
     FormsModule
   ],
   template: `
-    <div class="notification-preferences p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h4 class="text-lg font-semibold text-surface-900 dark:text-surface-0 m-0">
-          Notifications
-        </h4>
-        @if (isSubscribed()) {
-          <p-badge 
-            value="ON" 
-            severity="success" 
-            size="small">
-          </p-badge>
-        }
-        @if (!isSubscribed()) {
-          <p-badge 
-            value="OFF" 
-            severity="secondary" 
-            size="small">
-          </p-badge>
-        }
-      </div>
-
-      <!-- Push Notifications Toggle -->
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex flex-col">
-          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
-            Push Notifications
-          </label>
-          <span class="text-xs text-surface-500 dark:text-surface-400">
-            Get notified about new messages
-          </span>
+    <div class="space-y-2">
+      <!-- Push Notifications -->
+      <div class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-bell text-surface-400"></i>
+          <div class="flex-1">
+            <div class="text-surface-900 dark:text-surface-0">Push Notifications</div>
+            <div class="text-sm text-surface-500 dark:text-surface-400">Enable notifications on this device</div>
+          </div>
         </div>
         <p-toggleButton
           [(ngModel)]="isSubscribed"
           onLabel="ON"
           offLabel="OFF"
-          onIcon="pi pi-bell"
-          offIcon="pi pi-bell-slash"
+          styleClass="toggle-switch"
           [disabled]="!pushService.isSupported || isLoading()"
           (onChange)="onTogglePushNotifications($event)">
         </p-toggleButton>
@@ -60,43 +36,82 @@ import { FormsModule } from '@angular/forms';
 
       <!-- Message Notifications -->
       @if (isSubscribed()) {
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex flex-col">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
-              New Messages
-            </label>
-            <span class="text-xs text-surface-500 dark:text-surface-400">
-              Notify when you receive messages
-            </span>
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-comment text-surface-400"></i>
+            <div class="flex-1">
+              <div class="text-surface-900 dark:text-surface-0">New Messages</div>
+              <div class="text-sm text-surface-500 dark:text-surface-400">Get notified of new messages</div>
+            </div>
           </div>
           <p-toggleButton
-            [(ngModel)]="messageNotifications"
+            [(ngModel)]="likesAndCommentsNotifications"
             onLabel="ON"
             offLabel="OFF"
-            (onChange)="onToggleMessageNotifications($event)">
+            styleClass="toggle-switch"
+            (onChange)="onToggleLikesAndComments($event)">
           </p-toggleButton>
         </div>
       }
 
-      <!-- Group Message Notifications -->
+      <!-- Group Messages -->
       @if (isSubscribed()) {
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex flex-col">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300">
-              Group Messages
-            </label>
-            <span class="text-xs text-surface-500 dark:text-surface-400">
-              Notify for group conversations
-            </span>
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-users text-surface-400"></i>
+            <div class="flex-1">
+              <div class="text-surface-900 dark:text-surface-0">Group Messages</div>
+              <div class="text-sm text-surface-500 dark:text-surface-400">Notifications for group conversations</div>
+            </div>
           </div>
           <p-toggleButton
-            [(ngModel)]="groupNotifications"
+            [(ngModel)]="newFollowersNotifications"
             onLabel="ON"
             offLabel="OFF"
-            (onChange)="onToggleGroupNotifications($event)">
+            styleClass="toggle-switch"
+            (onChange)="onToggleNewFollowers($event)">
           </p-toggleButton>
         </div>
       }
+
+      <!-- Sound -->
+      @if (isSubscribed()) {
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-volume-up text-surface-400"></i>
+            <div class="flex-1">
+              <div class="text-surface-900 dark:text-surface-0">Message Sounds</div>
+              <div class="text-sm text-surface-500 dark:text-surface-400">Play sound for new messages</div>
+            </div>
+          </div>
+          <p-toggleButton
+            [(ngModel)]="directMessagesNotifications"
+            onLabel="ON"
+            offLabel="OFF"
+            styleClass="toggle-switch"
+            (onChange)="onToggleDirectMessages($event)">
+          </p-toggleButton>
+        </div>
+      }
+
+      <!-- Do Not Disturb -->
+      <div class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-moon text-surface-400"></i>
+          <div class="flex-1">
+            <div class="text-surface-900 dark:text-surface-0">Do Not Disturb</div>
+            <div class="text-sm text-surface-500 dark:text-surface-400">Mute all notifications temporarily</div>
+          </div>
+        </div>
+        <p-toggleButton
+          [(ngModel)]="doNotDisturb"
+          onLabel="ON"
+          offLabel="OFF"
+          styleClass="toggle-switch"
+          (onChange)="onToggleDoNotDisturb($event)">
+        </p-toggleButton>
+      </div>
+    </div>
 
       <p-divider></p-divider>
 
@@ -131,15 +146,46 @@ import { FormsModule } from '@angular/forms';
           </div>
         </div>
       }
-    </div>
   `,
   styles: [`
     :host {
       display: block;
     }
     
-    .notification-preferences {
-      min-width: 280px;
+    :host ::ng-deep .toggle-switch {
+      min-width: 60px !important;
+      height: 32px !important;
+      border-radius: 16px !important;
+      border: 1px solid var(--p-surface-300) !important;
+      background: var(--p-surface-100) !important;
+      color: var(--p-surface-600) !important;
+      font-size: 0.75rem !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    :host ::ng-deep .toggle-switch:hover {
+      border-color: var(--p-surface-400) !important;
+    }
+    
+    :host ::ng-deep .toggle-switch.p-togglebutton-checked {
+      background: var(--p-primary-500) !important;
+      border-color: var(--p-primary-500) !important;
+      color: white !important;
+    }
+    
+    :host ::ng-deep .toggle-switch.p-togglebutton-checked:hover {
+      background: var(--p-primary-600) !important;
+      border-color: var(--p-primary-600) !important;
+    }
+    
+    :host ::ng-deep .toggle-switch:disabled {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+    }
+    
+    :host ::ng-deep .toggle-switch .p-button-label {
+      padding: 0 !important;
     }
   `]
 })
@@ -149,8 +195,10 @@ export class NotificationPreferencesComponent {
   // Use the service's reactive signals directly
   isSubscribed = this.pushService.isSubscribed;
   isLoading = signal(false);
-  messageNotifications = model(false);
-  groupNotifications = signal(true);
+  likesAndCommentsNotifications = signal(true);
+  newFollowersNotifications = signal(true);
+  directMessagesNotifications = signal(true);
+  doNotDisturb = signal(false);
 
   constructor() {
     // Load preferences from localStorage
@@ -173,13 +221,23 @@ export class NotificationPreferencesComponent {
     }
   }
 
-  onToggleMessageNotifications(event: any) {
-    this.messageNotifications.set(event.checked);
+  onToggleLikesAndComments(event: any) {
+    this.likesAndCommentsNotifications.set(event.checked);
     this.savePreferences();
   }
 
-  onToggleGroupNotifications(event: any) {
-    this.groupNotifications.set(event.checked);
+  onToggleNewFollowers(event: any) {
+    this.newFollowersNotifications.set(event.checked);
+    this.savePreferences();
+  }
+
+  onToggleDirectMessages(event: any) {
+    this.directMessagesNotifications.set(event.checked);
+    this.savePreferences();
+  }
+
+  onToggleDoNotDisturb(event: any) {
+    this.doNotDisturb.set(event.checked);
     this.savePreferences();
   }
 
@@ -197,8 +255,10 @@ export class NotificationPreferencesComponent {
     if (preferences) {
       try {
         const parsed = JSON.parse(preferences);
-        this.messageNotifications.set(parsed.messageNotifications ?? true);
-        this.groupNotifications.set(parsed.groupNotifications ?? true);
+        this.likesAndCommentsNotifications.set(parsed.likesAndComments ?? true);
+        this.newFollowersNotifications.set(parsed.newFollowers ?? true);
+        this.directMessagesNotifications.set(parsed.directMessages ?? true);
+        this.doNotDisturb.set(parsed.doNotDisturb ?? false);
       } catch (error) {
         console.error('Error loading notification preferences:', error);
       }
@@ -207,16 +267,20 @@ export class NotificationPreferencesComponent {
 
   private savePreferences(): void {
     const preferences = {
-      messageNotifications: this.messageNotifications(),
-      groupNotifications: this.groupNotifications()
+      likesAndComments: this.likesAndCommentsNotifications(),
+      newFollowers: this.newFollowersNotifications(),
+      directMessages: this.directMessagesNotifications(),
+      doNotDisturb: this.doNotDisturb()
     };
     localStorage.setItem('notificationPreferences', JSON.stringify(preferences));
   }
 
   getNotificationPreferences() {
     return {
-      messageNotifications: this.messageNotifications(),
-      groupNotifications: this.groupNotifications()
+      likesAndComments: this.likesAndCommentsNotifications(),
+      newFollowers: this.newFollowersNotifications(),
+      directMessages: this.directMessagesNotifications(),
+      doNotDisturb: this.doNotDisturb()
     };
   }
 }

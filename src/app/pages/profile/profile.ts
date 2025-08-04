@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Avatar } from 'primeng/avatar';
-import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Toast } from 'primeng/toast';
 import { Tag } from 'primeng/tag';
@@ -23,7 +22,6 @@ import { NotificationPreferencesComponent } from '../../components/notification-
     FormsModule,
     Button,
     Avatar,
-    Card,
     InputText,
     Toast,
     Tag,

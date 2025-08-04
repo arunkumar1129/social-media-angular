@@ -1,21 +1,19 @@
 import { Component, inject, input, output } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Avatar } from 'primeng/avatar';
-import { Divider } from 'primeng/divider';
 import { User } from '../../models/user.model';
 import { Auth } from '../../services/auth';
 import { UserService } from '../../services/user-service';
 import { ConversationService } from '../../services/conversation.service';
-import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-mobile-sidebar',
   imports: [
     Button,
     Avatar,
-    Divider,
-    NgOptimizedImage
+    RouterLink,
+    RouterLinkActive
   ],
   template: `
     <!-- Backdrop -->
@@ -28,55 +26,56 @@ import { NgOptimizedImage } from '@angular/common';
 
     <!-- Sidebar -->
     <div 
-      class="fixed top-0 left-0 h-full w-80 max-w-screen bg-white dark:bg-surface-800 shadow-lg transform transition-transform duration-300 z-50"
+      class="fixed top-0 left-0 h-full w-72 bg-white dark:bg-surface-800 shadow-2xl transform transition-transform duration-300 z-50"
       [class.translate-x-0]="visible()"
       [class.-translate-x-full]="!visible()">
       
-      <!-- Header -->
-      <div class="flex items-center justify-between p-4 border-b border-surface-200 dark:border-surface-700">
-        <div class="flex items-center gap-3">
-          <img ngSrc="favicon-32x32.png" width="40" height="40" placeholder="Talkio" alt="Talkio Logo" />
-          <span class="text-lg font-semibold text-surface-900 dark:text-surface-0">Talkio</span>
+      <!-- Header with User Profile -->
+      <div class="p-6 bg-gradient-to-br from-primary-500 to-primary-600 text-white">
+        <div class="flex items-center justify-end mb-3">
+          <p-button
+            icon="pi pi-times"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            size="small"
+            styleClass="text-white hover:bg-white hover:bg-opacity-20"
+            (onClick)="closeSidebar()">
+          </p-button>
         </div>
-        <p-button
-          icon="pi pi-times"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          size="small"
-          (onClick)="closeSidebar()">
-        </p-button>
-      </div>
-
-      <!-- Content -->
-      <div class="p-4 space-y-6">
-        <!-- User Profile Section -->
-        <div class="flex flex-col items-center text-center p-4 bg-surface-50 dark:bg-surface-800 rounded-lg">
+        
+        <!-- User Profile -->
+        <div class="flex items-center gap-3">
           <p-avatar 
             [image]="user()?.avatarUrl" 
             [label]="!user()?.avatarUrl ? getAvatarLabel() : undefined"
-            size="xlarge" 
+            size="large"
             shape="circle"
-            class="mb-3">
+            class="border-2 border-white border-opacity-30">
           </p-avatar>
-          <h3 class="text-lg font-semibold text-surface-900 dark:text-surface-0 mb-1">
-            {{ user()?.displayName || user()?.username }}
-          </h3>
-          <p class="text-sm text-surface-600 dark:text-surface-400">
-            {{ user()?.email }}
-          </p>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-white truncate">
+              {{ user()?.displayName || user()?.username }}
+            </h3>
+            <p class="text-sm text-white text-opacity-80 truncate">
+              {{ user()?.email }}
+            </p>
+          </div>
         </div>
+      </div>
 
-        <!-- Navigation Menu -->
-        <div class="space-y-2 flex flex-col items-start">
+      <!-- Navigation Menu -->
+      <div class="p-4">
+        <nav class="space-y-2">
           <p-button
             label="Messages"
             icon="pi pi-comments"
             [text]="true"
             severity="secondary"
-            styleClass="w-full nav-item"
-            [class]="isActiveRoute('/messenger') ? 'active-nav-item' : ''"
-            (onClick)="navigateTo('/messenger')">
+            styleClass="w-full p-3 border-0 text-left mb-2"
+            routerLink="/messenger"
+            routerLinkActive="nav-active"
+            (onClick)="closeSidebar()">
           </p-button>
 
           <p-button
@@ -84,39 +83,56 @@ import { NgOptimizedImage } from '@angular/common';
             icon="pi pi-user"
             [text]="true"
             severity="secondary"
-            styleClass="w-full nav-item"
-            [class]="isActiveRoute('/profile') ? 'active-nav-item' : ''"
-            (onClick)="navigateTo('/profile')">
+            styleClass="w-full p-3 border-0 text-left mb-2"
+            routerLink="/profile"
+            routerLinkActive="nav-active"
+            (onClick)="closeSidebar()">
           </p-button>
-        </div>
 
-        <p-divider></p-divider>
-
-        <!-- Action Buttons -->
-        <div class="space-y-2">
           <p-button
-            label="Logout"
-            icon="pi pi-sign-out"
-            severity="danger"
-            [outlined]="true"
-            styleClass="w-full"
-            (onClick)="logout()">
+            label="Settings"
+            icon="pi pi-cog"
+            [text]="true"
+            severity="secondary"
+            styleClass="w-full p-3 border-0 text-left mb-2">
           </p-button>
-        </div>
+        </nav>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-surface-200 dark:border-surface-700">
+        <p-button
+          label="Sign Out"
+          icon="pi pi-sign-out"
+          severity="danger"
+          [text]="true"
+          styleClass="w-full justify-center"
+          (onClick)="logout()">
+        </p-button>
       </div>
     </div>
   `,
   styles: [`
     :host {
-      .nav-item {
-        justify-content: flex-start !important;
-        padding: 0.75rem 1rem !important;
-        text-align: left !important;
+      .nav-active ::ng-deep .p-button {
+        background-color: var(--p-primary-50) !important;
+        color: var(--p-primary-600) !important;
       }
       
-      .active-nav-item {
-        background-color: var(--primary-50) !important;
-        color: var(--primary-600) !important;
+      ::ng-deep .p-button {
+        justify-content: flex-start !important;
+      }
+      
+      ::ng-deep .justify-center.p-button {
+        justify-content: center !important;
+      }
+      
+      ::ng-deep .text-white .p-button {
+        color: white !important;
+      }
+      
+      ::ng-deep .text-white .p-button .p-button-icon {
+        color: white !important;
       }
       
       .translate-x-0 {
@@ -141,15 +157,6 @@ export class MobileSidebarComponent {
 
   closeSidebar() {
     this.visibleChange.emit(false);
-  }
-
-  navigateTo(route: string) {
-    this.router.navigate([route]);
-    this.closeSidebar();
-  }
-
-  isActiveRoute(route: string): boolean {
-    return this.router.url === route;
   }
 
   logout() {

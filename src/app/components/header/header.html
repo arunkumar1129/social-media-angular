@@ -1,90 +1,90 @@
 <p-toolbar
-  class="bg-primary-500 text-primary-50 px-4 py-3 rounded-none shadow-md flex-shrink-0"
+  class="bg-primary-500 text-primary-50 w-full"
 >
-  <div class="p-toolbar-group-start flex items-center">
-    <!-- Mobile Menu Toggle -->
-    <p-button
-      icon="pi pi-bars"
-      [text]="true"
-      [rounded]="true"
-      severity="secondary"
-      size="small"
-      class="sm:hidden mr-3"
-      (onClick)="toggleSidebar()">
-    </p-button>
-    
-    <div class="flex items-center">
-      <div class="flex items-center px-2">
-        <div class="w-[40px]">
-          <img ngSrc="favicon-32x32.png" width="40" height="40" placeholder="Talkio" alt="Talkio Logo" />
-        </div>
-
-        <span class="ml-2 font-semibold text-2xl dark:text-white">
-          Talkio
-        </span>
-      </div>
-      @if (totalUnreadCount() > 0) {
-        <p-badge 
-          [value]="totalUnreadCount().toString()" 
-          severity="danger" 
-          class="ml-2"
-          [style]="{'min-width': '20px', 'height': '20px'}"
-        ></p-badge>
-      }
-    </div>
-  </div>
-
-  <div class="p-toolbar-group-end flex items-center gap-4">
-    <!-- Navigation Links -->
-    <div class="hidden sm:flex items-center gap-2">
+  <ng-template #start>
+    <div class="flex items-center md:gap-6">
+      <!-- Mobile Menu Toggle -->
       <p-button
-        label="Messages"
-        icon="pi pi-comments"
+        icon="pi pi-bars"
         [text]="true"
-        routerLink="/messenger"
-        routerLinkActive="active-nav"
+        [rounded]="true"
         severity="secondary"
         size="small"
-        styleClass="nav-button border-none">
+        class="sm:hidden"
+        (onClick)="toggleSidebar()">
       </p-button>
       
-      <p-button
-        label="Profile"
-        icon="pi pi-user"
-        [text]="true"
-        routerLink="/profile"
-        routerLinkActive="active-nav"
-        severity="secondary"
-        size="small"
-        styleClass="nav-button border-none">
-      </p-button>
-    </div>
+      <!-- Logo Section -->
+      <div class="flex items-center">
+        <div class="flex items-center px-2">
+          <div class="w-[40px]">
+            <img ngSrc="favicon-32x32.png" width="40" height="40" placeholder="Talkio" alt="Talkio Logo" />
+          </div>
+          <span class="ml-2 font-semibold text-2xl dark:text-white">
+            Talkio
+          </span>
+        </div>
+      </div>
 
-    <!-- User Info -->
-    <div class="flex items-center gap-3">
-      <!-- Profile Avatar with Click Handler -->
-      <div class="profile-avatar-container">
-        @if (user()?.avatarUrl) {
-          <p-avatar
-            [image]="user()?.avatarUrl"
-            size="large"
-            shape="circle"
-            class="hover:scale-105 transition-transform duration-200"
-            #menuTarget
-          ></p-avatar>
-        } @else {
-          <p-avatar
-            [label]="user()?.username?.charAt(0)?.toUpperCase() || 'U'"
-            size="large"
-            shape="circle"
-            class="hover:scale-105 transition-transform duration-200"
-            #menuTarget
-          ></p-avatar>
-        }
+      <!-- Navigation Links -->
+      <div class="hidden sm:flex items-center gap-2">
+        <div class="relative">
+          <p-button
+            label="Messages"
+            icon="pi pi-comments"
+            [text]="true"
+            routerLink="/messenger"
+            routerLinkActive="active-nav"
+            severity="secondary"
+            size="small"
+            styleClass="nav-button border-none">
+          </p-button>
+          @if (totalUnreadCount() > 0) {
+            <p-badge 
+              [value]="totalUnreadCount().toString()" 
+              severity="danger" 
+              class="absolute -top-2 -right-1"
+              size="small"
+            ></p-badge>
+          }
+        </div>
+        
+        <p-button
+          label="Profile"
+          icon="pi pi-user"
+          [text]="true"
+          routerLink="/profile"
+          routerLinkActive="active-nav"
+          severity="secondary"
+          size="small"
+          styleClass="nav-button border-none">
+        </p-button>
       </div>
     </div>
-    
-  </div>
+  </ng-template>
+
+  <ng-template #end>
+    <!-- User Avatar -->
+    <div class="profile-avatar-container">
+      @if (user()?.avatarUrl) {
+        <p-avatar
+          [image]="user()?.avatarUrl"
+          size="large"
+          shape="circle"
+          class="hover:scale-105 transition-transform duration-200"
+          #menuTarget
+        ></p-avatar>
+      } @else {
+        <p-avatar
+          [label]="user()?.username?.charAt(0)?.toUpperCase() || 'U'"
+          size="large"
+          shape="circle"
+          class="hover:scale-105 transition-transform duration-200"
+          #menuTarget
+        ></p-avatar>
+      }
+    </div>
+  </ng-template>
 </p-toolbar>
 
 <!-- Mobile Sidebar -->
