@@ -1,32 +1,30 @@
 import { Component, inject, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { AvatarModule } from 'primeng/avatar';
-import { DividerModule } from 'primeng/divider';
-import { RippleModule } from 'primeng/ripple';
+import { Button } from 'primeng/button';
+import { Avatar } from 'primeng/avatar';
+import { Divider } from 'primeng/divider';
 import { User } from '../../models/user.model';
 import { Auth } from '../../services/auth';
 import { UserService } from '../../services/user-service';
 import { ConversationService } from '../../services/conversation.service';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-mobile-sidebar',
-  standalone: true,
   imports: [
-    CommonModule,
-    ButtonModule,
-    AvatarModule,
-    DividerModule,
-    RippleModule
+    Button,
+    Avatar,
+    Divider,
+    NgOptimizedImage
   ],
   template: `
     <!-- Backdrop -->
-    <div 
-      *ngIf="visible()"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40"
-      (click)="closeSidebar()">
-    </div>
+    @if (visible()) {
+      <div 
+        class="fixed inset-0 bg-black bg-opacity-50 z-40"
+        (click)="closeSidebar()">
+      </div>
+    }
 
     <!-- Sidebar -->
     <div 
@@ -37,7 +35,7 @@ import { ConversationService } from '../../services/conversation.service';
       <!-- Header -->
       <div class="flex items-center justify-between p-4 border-b border-surface-200 dark:border-surface-700">
         <div class="flex items-center gap-3">
-          <img src="talkio-logo.png" alt="Talkio" class="w-8 h-8" />
+          <img ngSrc="favicon-32x32.png" width="40" height="40" placeholder="Talkio" alt="Talkio Logo" />
           <span class="text-lg font-semibold text-surface-900 dark:text-surface-0">Talkio</span>
         </div>
         <p-button

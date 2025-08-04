@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, effect, untracked, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TagModule } from 'primeng/tag';
+import { Tag } from 'primeng/tag';
 import { ChatListComponent } from '../../components/chat-list/chat-list';
 import { ChatWindowComponent } from '../../components/chat-window/chat-window';
 import { Conversation } from '../../models/conversation.model';
@@ -13,14 +12,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-messenger',
+  templateUrl: './messenger.html',
+  styleUrl: './messenger.scss',
   imports: [
-    CommonModule,
-    TagModule,
+    Tag,
     ChatListComponent,
     ChatWindowComponent
-  ],
-  templateUrl: './messenger.html',
-  styleUrl: './messenger.scss'
+  ]
 })
 export class Messenger implements OnInit, OnDestroy {
   public conversationService = inject(ConversationService);

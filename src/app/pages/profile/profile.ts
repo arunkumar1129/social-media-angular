@@ -1,16 +1,12 @@
 import { Component, inject, signal, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { AvatarModule } from 'primeng/avatar';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { FileUploadModule } from 'primeng/fileupload';
-import { ToastModule } from 'primeng/toast';
-import { DividerModule } from 'primeng/divider';
-import { TagModule } from 'primeng/tag';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { Button } from 'primeng/button';
+import { Avatar } from 'primeng/avatar';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Toast } from 'primeng/toast';
+import { Tag } from 'primeng/tag';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { User } from '../../models/user.model';
@@ -21,23 +17,19 @@ import { NotificationPreferencesComponent } from '../../components/notification-
 
 @Component({
   selector: 'app-profile',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ButtonModule,
-    AvatarModule,
-    CardModule,
-    InputTextModule,
-    FileUploadModule,
-    ToastModule,
-    DividerModule,
-    TagModule,
-    ConfirmDialogModule,
-    NotificationPreferencesComponent
-  ],
   templateUrl: './profile.html',
   styleUrls: ['./profile.scss'],
+  imports: [
+    FormsModule,
+    Button,
+    Avatar,
+    Card,
+    InputText,
+    Toast,
+    Tag,
+    ConfirmDialog,
+    NotificationPreferencesComponent
+  ],
   providers: [MessageService, ConfirmationService]
 })
 export class Profile {

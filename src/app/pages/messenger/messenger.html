@@ -1,15 +1,15 @@
 <div class="messenger-container h-full flex flex-col">
-  <div class="connection-status p-2" *ngIf="!connectionStatus()">
-    <p-tag severity="danger" value="Connection Lost - Attempting to reconnect..." icon="pi pi-exclamation-triangle"></p-tag>
-  </div>
-  <div class="chat-content flex-1 flex bg-gray-50">
+  @if (!connectionStatus()) {
+    <div class="connection-status p-2">
+      <p-tag severity="danger" value="Connection Lost - Attempting to reconnect..." icon="pi pi-exclamation-triangle"></p-tag>
+    </div>
+  }
+  <div class="chat-content flex-1 flex">
     <!-- Chat List - Full width on mobile/tablet, side panel on desktop -->
-    <div class="chat-list bg-white border-r border-gray-200"
-         [ngClass]="{
-          'hidden': isMobileOrTablet() && showChatWindow(),
-          'w-full': isMobileOrTablet(),
-          'w-1/3': isDesktop()
-          }">
+    <div class="chat-list border-r"
+         [class.hidden]="isMobileOrTablet() && showChatWindow()"
+         [class.w-full]="isMobileOrTablet()"
+         [class]="isDesktop() ? 'w-1/3' : ''">
       <app-chat-list 
         [conversations]="conversations()"
         [(selectedConversationId)]="conversationService.selectedConversationId"
@@ -17,7 +17,7 @@
       </app-chat-list>
     </div>
     <!-- Chat Window - Full width on mobile/tablet when shown, main area on desktop -->
-    <div class="chat-window flex-1 bg-white"
+    <div class="chat-window flex-1"
          [class.hidden]="isMobileOrTablet() && !showChatWindow()">
       <app-chat-window 
         [conversation]="conversationService.selectedConversation()"

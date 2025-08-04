@@ -1,7 +1,7 @@
 <div class="chat-list-container h-full flex flex-col">
   <!-- Header with Search and Add Button -->
   <div class="search-section p-4">
-    <div class="flex gap-2 mb-3">
+    <div class="flex gap-2">
       <p-iconField iconPosition="left" class="flex-1">
         <p-inputIcon>
           <i class="pi pi-search"></i>
@@ -19,7 +19,7 @@
       <p-button 
         icon="pi pi-plus" 
         [rounded]="true"
-        severity="info"
+        severity="primary"
         (onClick)="onAddConversation()"
         pTooltip="Start new conversation"
         tooltipPosition="bottom"
@@ -40,7 +40,7 @@
       optionValue="_id">
       
       <ng-template let-conversation pTemplate="item">
-        <div class="conversation-item w-full flex items-center p-3 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer border-b border-surface-100 dark:border-surface-800">
+        <div class="conversation-item w-full flex items-center px-4 py-3 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer border-b border-surface-100 dark:border-surface-800">
           <!-- Avatar -->
           <div class="relative mr-3 flex">
             <p-avatar 
@@ -50,10 +50,10 @@
             ></p-avatar>
             
             <!-- Online status indicator for non-group chats -->
-            <div 
-              *ngIf="!conversation.isGroup && conversation.otherParticipant?.status === 'online'"
-              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-surface-900">
-            </div>
+            @if (!conversation.isGroup && conversation.otherParticipant?.status === 'online') {
+              <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-surface-900">
+              </div>
+            }
           </div>
 
           <!-- Conversation Details -->
@@ -75,12 +75,13 @@
               </p>
               
               <!-- Unread count badge -->
-              <p-badge 
-                *ngIf="conversation.unReadCount > 0"
-                [value]="conversation.unReadCount.toString()"
-                severity="info"
-                class="ml-2">
-              </p-badge>
+              @if (conversation.unReadCount > 0) {
+                <p-badge 
+                  [value]="conversation.unReadCount.toString()"
+                  severity="info"
+                  class="ml-2">
+                </p-badge>
+              }
             </div>
           </div>
         </div>

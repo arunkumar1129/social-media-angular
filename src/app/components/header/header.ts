@@ -4,16 +4,16 @@ import { Avatar } from 'primeng/avatar';
 import { Toolbar } from 'primeng/toolbar';
 import { Badge } from 'primeng/badge';
 import { Button } from 'primeng/button';
-import { MenuModule } from 'primeng/menu';
 import { Menu } from 'primeng/menu';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Toast } from 'primeng/toast';
 import { User } from '../../models/user.model';
 import { ConversationService } from '../../services/conversation.service';
 import { Auth } from '../../services/auth';
 import { UserService } from '../../services/user-service';
 import { MobileSidebarComponent } from '../mobile-sidebar/mobile-sidebar';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-header',
@@ -22,12 +22,12 @@ import { MobileSidebarComponent } from '../mobile-sidebar/mobile-sidebar';
     Avatar,
     Badge,
     Button,
-    MenuModule,
-    ConfirmDialogModule,
-    ToastModule,
+    ConfirmDialog,
+    Toast,
     RouterLink,
     RouterLinkActive,
-    MobileSidebarComponent
+    MobileSidebarComponent,
+    NgOptimizedImage
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',

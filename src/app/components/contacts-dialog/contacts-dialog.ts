@@ -1,35 +1,31 @@
 import { Component, inject, signal, computed, model, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { AvatarModule } from 'primeng/avatar';
-import { ListboxModule } from 'primeng/listbox';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { Dialog } from 'primeng/dialog';
+import { Button } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { Avatar } from 'primeng/avatar';
+import { Listbox } from 'primeng/listbox';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { UserService } from '../../services/user-service';
 import { User } from '../../models/user.model';
 import { ApiResponse } from '../../models/api-response.model';
 
 @Component({
   selector: 'app-contacts-dialog',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    DialogModule,
-    ButtonModule,
-    InputTextModule,
-    IconFieldModule,
-    InputIconModule,
-    AvatarModule,
-    ListboxModule,
-    ProgressSpinnerModule
-  ],
   templateUrl: './contacts-dialog.html',
-  styleUrls: ['./contacts-dialog.scss']
+  styleUrls: ['./contacts-dialog.scss'],
+  imports: [
+    FormsModule,
+    Dialog,
+    Button,
+    InputText,
+    IconField,
+    InputIcon,
+    Avatar,
+    ProgressSpinner
+  ]
 })
 export class ContactsDialogComponent {
   private userService = inject(UserService);

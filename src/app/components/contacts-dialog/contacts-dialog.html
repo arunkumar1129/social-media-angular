@@ -25,20 +25,23 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading()" class="flex justify-center items-center py-8">
-    <p-progressSpinner styleClass="w-8 h-8"></p-progressSpinner>
-    <span class="ml-3">Loading contacts...</span>
-  </div>
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-8">
+      <p-progressSpinner styleClass="w-8 h-8"></p-progressSpinner>
+      <span class="ml-3">Loading contacts...</span>
+    </div>
+  }
 
   <!-- Contacts List -->
-  <div *ngIf="!isLoading()" class="contacts-list max-h-96 overflow-y-auto">
-    <div 
-      *ngFor="let contact of filteredContacts(); trackBy: trackByContactId"
-      class="contact-item flex items-center p-3 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer rounded-lg mb-2 transition-colors"
-      [class.selected]="selectedUser()?._id === contact._id"
-      [class.bg-primary-50]="selectedUser()?._id === contact._id"
-      [class.dark:bg-primary-900]="selectedUser()?._id === contact._id"
-      (click)="onContactSelect(contact)">
+  @if (!isLoading()) {
+    <div class="contacts-list max-h-96 overflow-y-auto">
+      @for (contact of filteredContacts(); track trackByContactId($index, contact)) {
+        <div 
+          class="contact-item flex items-center p-3 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer rounded-lg mb-2 transition-colors"
+          [class.selected]="selectedUser()?._id === contact._id"
+          [class.bg-primary-50]="selectedUser()?._id === contact._id"
+          [class.dark:bg-primary-900]="selectedUser()?._id === contact._id"
+          (click)="onContactSelect(contact)">
       
       <!-- Avatar -->
       <div class="relative mr-3 flex">
@@ -50,10 +53,10 @@
         ></p-avatar>
         
         <!-- Online status indicator -->
-        <div 
-          *ngIf="contact.status === 'online'"
-          class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-surface-900">
-        </div>
+        @if (contact.status === 'online') {
+          <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-surface-900">
+          </div>
+        }
       </div>
 
       <!-- Contact Details -->
@@ -66,33 +69,35 @@
         </p>
         <span 
           class="text-xs"
-          [ngClass]="{
-            'text-green-500': contact.status === 'online',
-            'text-surface-500': contact.status === 'offline'
-          }">
+          [class.text-green-500]="contact.status === 'online'"
+          [class.text-surface-500]="contact.status === 'offline'">
           {{ contact.status }}
         </span>
       </div>
 
       <!-- Selection Indicator -->
-      <div *ngIf="selectedUser()?._id === contact._id" class="ml-3">
-        <i class="pi pi-check text-primary-500"></i>
-      </div>
-    </div>
+      @if (selectedUser()?._id === contact._id) {
+        <div class="ml-3">
+          <i class="pi pi-check text-primary-500"></i>
+        </div>
+      }
+        </div>
+      }
 
-    <!-- Empty State -->
-    <div *ngIf="filteredContacts().length === 0" class="text-center py-8">
-      <i class="pi pi-users text-4xl text-surface-400 dark:text-surface-500 mb-4"></i>
-      <h3 class="text-lg font-semibold text-surface-700 dark:text-surface-300 mb-2">
-        {{ searchTerm() ? 'No contacts found' : 'No contacts available' }}
-      </h3>
-      <p class="text-surface-500 dark:text-surface-400">
-        {{ searchTerm() ? 'Try adjusting your search terms' : 'Add some contacts to start chatting' }}
-      </p>
+      <!-- Empty State -->
+      @if (filteredContacts().length === 0) {
+        <div class="text-center py-8">
+          <i class="pi pi-users text-4xl text-surface-400 dark:text-surface-500 mb-4"></i>
+          <h3 class="text-lg font-semibold text-surface-700 dark:text-surface-300 mb-2">
+            {{ searchTerm() ? 'No contacts found' : 'No contacts available' }}
+          </h3>
+          <p class="text-surface-500 dark:text-surface-400">
+            {{ searchTerm() ? 'Try adjusting your search terms' : 'Add some contacts to start chatting' }}
+          </p>
+        </div>
+      }
     </div>
-  </div>
-
-  <!-- Dialog Footer -->
+  }  <!-- Dialog Footer -->
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">
       <p-button 

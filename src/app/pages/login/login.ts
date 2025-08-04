@@ -7,6 +7,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Auth } from '../../services/auth';
 import { TokenRequest } from '../../models/user.model';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,8 @@ import { TokenRequest } from '../../models/user.model';
     Password,
     Button,
     Checkbox,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgOptimizedImage
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss'

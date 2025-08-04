@@ -1,13 +1,10 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, inject, signal, SimpleChanges, effect, input, untracked } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { AvatarModule } from 'primeng/avatar';
-import { ScrollPanelModule } from 'primeng/scrollpanel';
-import { ToolbarModule } from 'primeng/toolbar';
-import { MenuModule } from 'primeng/menu';
-import { BadgeModule } from 'primeng/badge';
+import { Button } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { Avatar } from 'primeng/avatar';
+import { ScrollPanel } from 'primeng/scrollpanel';
+import { Toolbar } from 'primeng/toolbar';
 import { Subscription } from 'rxjs';
 import { Conversation } from '../../models/conversation.model';
 import { User } from '../../models/user.model';
@@ -17,24 +14,22 @@ import { WebSocketService } from '../../services/websocket.service';
 import { WindowFocusService } from '../../services/window-focus.service';
 import { DeviceService } from '../../services/device.service';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-chat-window',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ButtonModule,
-    InputTextModule,
-    AvatarModule,
-    ScrollPanelModule,
-    ToolbarModule,
-    MenuModule,
-    BadgeModule,
-    TimeAgoPipe
-  ],
   templateUrl: './chat-window.html',
-  styleUrls: ['./chat-window.scss']
+  styleUrls: ['./chat-window.scss'],
+  imports: [
+    FormsModule,
+    Button,
+    InputText,
+    Avatar,
+    ScrollPanel,
+    Toolbar,
+    TimeAgoPipe,
+    DatePipe
+  ]
 })
 export class ChatWindowComponent implements OnInit, OnDestroy {
   private conversationService = inject(ConversationService);

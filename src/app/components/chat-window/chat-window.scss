@@ -79,7 +79,16 @@
     padding: 0.75rem 1rem;
     border-radius: 1rem;
     word-wrap: break-word;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    
+    &.message-own {
+      background-color: var(--p-primary-color);
+      color: var(--p-primary-contrast-color);
+    }
+    
+    &.message-other {
+      background-color: var(--p-surface-100);
+      color: var(--p-surface-900);
+    }
     
     .message-content {
       line-height: 1.4;

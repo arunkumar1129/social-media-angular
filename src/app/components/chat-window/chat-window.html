@@ -1,51 +1,55 @@
-<div class="chat-window-container h-full flex flex-col" *ngIf="conversation(); else noConversation">
+@if (conversation()) {
+  <div class="chat-window-container h-full flex flex-col">
   <!-- Chat Header -->
   <div class="chat-header">
-    <p-toolbar styleClass="border-none bg-surface-0 dark:bg-surface-900 {{deviceService.isMobile() ? 'px-0' : ''}}">
+    <p-toolbar class="border-0" styleClass="bg-surface-0 dark:bg-surface-900 {{deviceService.isMobile() ? 'px-0' : ''}}">
       <div class="flex items-center w-full">
-        <!-- Back Button for Mobile/Tablet -->
-        <div class="flex items-center" [class.hidden]="deviceService.isDesktop()">
-          <p-button 
-            icon="pi pi-arrow-left" 
-            severity="secondary" 
-            [text]="true"
-            class="p-button-xs"
-            (onClick)="onBackToList()"
-            pTooltip="Back to conversations">
-          </p-button>
-        </div>
-        
-        <!-- Avatar and Info -->
-        <div class="flex items-center flex-1">
-          <p-avatar [image]="getAvatar()" size="large" shape="circle" class="mr-3">
-          </p-avatar>
+      <!-- Back Button for Mobile/Tablet -->
+      <div class="flex items-center" [class.hidden]="deviceService.isDesktop()">
+        <p-button 
+        icon="pi pi-arrow-left" 
+        severity="secondary" 
+        [text]="true"
+        class="p-button-xs"
+        (onClick)="onBackToList()"
+        pTooltip="Back to conversations">
+        </p-button>
+      </div>
+      
+      <!-- Avatar and Info -->
+      <div class="flex items-center flex-1">
+        <p-avatar [image]="getAvatar()" size="large" shape="circle" class="mr-3">
+        </p-avatar>
 
-          <div class="flex flex-col">
-            <h3 class="font-semibold text-surface-900 dark:text-surface-0 m-0">
-              {{ getDisplayName() }}
-            </h3>
-            <span *ngIf="!conversation()!.isGroup" class="text-sm text-surface-500 dark:text-surface-400" [ngClass]="{
-                'text-green-500': conversation()?.otherParticipant?.status === 'online',
-                'text-surface-500': conversation()?.otherParticipant?.status === 'offline'
-              }">
-              {{ conversation()?.otherParticipant?.status === 'offline' ?
-              'Last seen ' + (conversation()?.otherParticipant?.lastSeen | timeAgo) : 'online' }}
-            </span>
-            <span *ngIf="conversation()!.isGroup" class="text-sm text-surface-500 dark:text-surface-400">
-              {{ conversation()!.participants.length }} members
-            </span>
-          </div>
+        <div class="flex flex-col">
+        <h3 class="font-semibold text-surface-900 dark:text-surface-0 m-0">
+          {{ getDisplayName() }}
+        </h3>
+        @if (!conversation()!.isGroup) {
+          <span class="text-sm text-surface-500 dark:text-surface-400"
+            [class.text-green-500]="conversation()?.otherParticipant?.status === 'online'"
+            [class.text-surface-500]="conversation()?.otherParticipant?.status === 'offline'">
+            {{ conversation()?.otherParticipant?.status === 'offline' ?
+            'Last seen ' + (conversation()?.otherParticipant?.lastSeen | timeAgo) : 'online' }}
+          </span>
+        }
+        @if (conversation()!.isGroup) {
+          <span class="text-sm text-surface-500 dark:text-surface-400">
+            {{ conversation()!.participants.length }} members
+          </span>
+        }
         </div>
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="flex items-center">
-          <p-button icon="pi pi-phone" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
-          </p-button>
-          <p-button icon="pi pi-video" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
-          </p-button>
-          <p-button icon="pi pi-ellipsis-v" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
-          </p-button>
-        </div>
+      <!-- Action Buttons -->
+      <div class="flex items-center">
+        <p-button icon="pi pi-phone" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
+        </p-button>
+        <p-button icon="pi pi-video" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
+        </p-button>
+        <p-button icon="pi pi-ellipsis-v" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
+        </p-button>
+      </div>
       </div>
     </p-toolbar>
   </div>
@@ -54,36 +58,38 @@
   <div class="messages-container flex-1 overflow-hidden">
     <p-scrollPanel [style]="{'width': '100%', 'height': '100%'}" styleClass="custom-scrollbar">
       <div class="messages-list p-4 space-y-4">
-        <div *ngFor="let message of messages(); trackBy: trackByMessageId" class="message-wrapper" [ngClass]="{
-            'message-own': message.senderId === user()?.id,
-            'message-other': message.senderId !== user()?.id
-          }">
-          <div class="message-bubble" [ngClass]="{
-            'bg-primary-500 text-white': message.senderId === user()?.id,
-            'bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-0': message.senderId !== user()?.id
-          }">
-            <div class="message-content">
-              {{ message.content }}
-            </div>
-            <div class="message-time">
-              {{ message.timestamp | date: 'hh:mm a' }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Typing Indicator -->
-        <div *ngIf="isAnyoneTyping()" class="typing-indicator message-wrapper message-other">
-          <div class="message-bubble bg-surface-100 dark:bg-surface-800 text-surface-500 dark:text-surface-400">
-            <div class="typing-dots flex items-center space-x-1">
-              <span class="typing-text">{{ getTypingText() }}</span>
-              <div class="typing-animation flex space-x-1 ml-2">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
+        @for (message of messages(); track trackByMessageId($index, message)) {
+          <div class="message-wrapper"
+            [class.message-own]="message.senderId === user()?.id"
+            [class.message-other]="message.senderId !== user()?.id">
+            <div class="message-bubble"
+              [class.message-own]="message.senderId === user()?.id"
+              [class.message-other]="message.senderId !== user()?.id">
+              <div class="message-content">
+                {{ message.content }}
+              </div>
+              <div class="message-time">
+                {{ message.timestamp | date: 'hh:mm a' }}
               </div>
             </div>
           </div>
-        </div>
+        }
+
+        <!-- Typing Indicator -->
+        @if (isAnyoneTyping()) {
+          <div class="typing-indicator message-wrapper message-other">
+            <div class="message-bubble bg-surface-100 dark:bg-surface-800 text-surface-500 dark:text-surface-400">
+              <div class="typing-dots flex items-center space-x-1">
+                <span class="typing-text">{{ getTypingText() }}</span>
+                <div class="typing-animation flex space-x-1 ml-2">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </p-scrollPanel>
   </div>
@@ -95,7 +101,7 @@
       [class.px-0]="deviceService.isMobileOrTablet()">
       <!-- Attachment Button -->
       <p-button icon="pi pi-paperclip" severity="secondary" [text]="true" [rounded]="true"
-        class="p-button-sm flex-shrink-0" [ngClass]="{'p-button-xs': deviceService.isMobileOrTablet()}">
+        class="p-button-sm flex-shrink-0" [class.p-button-xs]="deviceService.isMobileOrTablet()">
       </p-button>
 
       <!-- Message Input -->
@@ -114,9 +120,8 @@
     </div>
   </div>
 </div>
-
-<!-- No Conversation Selected -->
-<ng-template #noConversation>
+} @else {
+  <!-- No Conversation Selected -->
   <div class="no-conversation flex items-center justify-center h-full">
     <div class="text-center">
       <i class="pi pi-comments text-6xl text-surface-400 dark:text-surface-500 mb-4"></i>
@@ -128,4 +133,4 @@
       </p>
     </div>
   </div>
-</ng-template>
+}

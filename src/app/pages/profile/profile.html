@@ -1,6 +1,6 @@
 <div class="profile-page min-h-screen bg-surface-50 dark:bg-surface-900">
   <!-- Header -->
-  <div class="sticky top-0 z-10 bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 px-4 py-3">
+  <div class="sticky top-0 z-10 border-b border-surface-200 dark:border-surface-700 px-4 py-3">
     <div class="flex items-center justify-between max-w-4xl mx-auto">
       <div class="flex items-center gap-3">
         <p-button
@@ -14,33 +14,36 @@
       </div>
       
       <div class="flex items-center gap-2">
-        <p-button
-          *ngIf="!isEditing()"
-          label="Edit"
-          icon="pi pi-pencil"
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          (onClick)="startEdit()">
-        </p-button>
-        
-        <div *ngIf="isEditing()" class="flex gap-2">
+        @if (!isEditing()) {
           <p-button
-            label="Cancel"
-            icon="pi pi-times"
+            label="Edit"
+            icon="pi pi-pencil"
             severity="secondary"
             [outlined]="true"
             size="small"
-            (onClick)="cancelEdit()">
+            (onClick)="startEdit()">
           </p-button>
-          <p-button
-            label="Save"
-            icon="pi pi-check"
-            size="small"
-            [loading]="savingProfile()"
-            (onClick)="saveProfile()">
-          </p-button>
-        </div>
+        }
+        
+        @if (isEditing()) {
+          <div class="flex gap-2">
+            <p-button
+              label="Cancel"
+              icon="pi pi-times"
+              severity="secondary"
+              [outlined]="true"
+              size="small"
+              (onClick)="cancelEdit()">
+            </p-button>
+            <p-button
+              label="Save"
+              icon="pi pi-check"
+              size="small"
+              [loading]="savingProfile()"
+              (onClick)="saveProfile()">
+            </p-button>
+          </div>
+        }
       </div>
     </div>
   </div>
@@ -65,7 +68,7 @@
             <div 
               class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
               (click)="triggerFileUpload()">
-              <i class="pi pi-camera text-white text-xl"></i>
+              <i class="pi pi-camera text-xl"></i>
             </div>
           </div>
           
@@ -88,21 +91,24 @@
               (onClick)="triggerFileUpload()">
             </p-button>
             
-            <p-button
-              *ngIf="getCurrentAvatarUrl()"
-              label="Remove"
-              icon="pi pi-trash"
-              severity="danger"
-              [outlined]="true"
-              size="small"
-              (onClick)="removeAvatar()">
-            </p-button>
+            @if (getCurrentAvatarUrl()) {
+              <p-button
+                label="Remove"
+                icon="pi pi-trash"
+                severity="danger"
+                [outlined]="true"
+                size="small"
+                (onClick)="removeAvatar()">
+              </p-button>
+            }
           </div>
           
-          <div *ngIf="uploadingAvatar()" class="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400">
-            <i class="pi pi-spin pi-spinner"></i>
-            <span>Uploading...</span>
-          </div>
+          @if (uploadingAvatar()) {
+            <div class="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-400">
+              <i class="pi pi-spin pi-spinner"></i>
+              <span>Uploading...</span>
+            </div>
+          }
         </div>
 
         <!-- Profile Information -->
@@ -112,16 +118,19 @@
             <label class="block text-sm font-medium text-surface-700 dark:text-surface-300">
               Display Name
             </label>
-            <input
-              *ngIf="isEditing()"
-              type="text"
-              pInputText
-              [(ngModel)]="editForm().displayName"
-              class="w-full"
-              placeholder="Enter your display name">
-            <p *ngIf="!isEditing()" class="text-surface-900 dark:text-surface-0 font-medium">
-              {{ user()?.displayName || 'Not set' }}
-            </p>
+            @if (isEditing()) {
+              <input
+                type="text"
+                pInputText
+                [(ngModel)]="editForm().displayName"
+                class="w-full"
+                placeholder="Enter your display name">
+            }
+            @if (!isEditing()) {
+              <p class="text-surface-900 dark:text-surface-0 font-medium">
+                {{ user()?.displayName || 'Not set' }}
+              </p>
+            }
           </div>
 
           <!-- Username -->
@@ -149,15 +158,18 @@
             <label class="block text-sm font-medium text-surface-700 dark:text-surface-300">
               Bio
             </label>
-            <textarea
-              *ngIf="isEditing()"
-              [(ngModel)]="editForm().bio"
-              class="w-full p-2 border border-surface-300 dark:border-surface-600 rounded-md bg-white dark:bg-surface-800 text-surface-900 dark:text-surface-0 resize-none"
-              rows="3"
-              placeholder="Tell us about yourself..."></textarea>
-            <p *ngIf="!isEditing()" class="text-surface-600 dark:text-surface-400">
-              {{ user()?.bio || 'No bio added yet' }}
-            </p>
+            @if (isEditing()) {
+              <textarea
+                [(ngModel)]="editForm().bio"
+                class="w-full p-2 border border-surface-300 dark:border-surface-600 rounded-md resize-none"
+                rows="3"
+                placeholder="Tell us about yourself..."></textarea>
+            }
+            @if (!isEditing()) {
+              <p class="text-surface-600 dark:text-surface-400">
+                {{ user()?.bio || 'No bio added yet' }}
+              </p>
+            }
           </div>
 
           <!-- Location -->
@@ -165,16 +177,19 @@
             <label class="block text-sm font-medium text-surface-700 dark:text-surface-300">
               Location
             </label>
-            <input
-              *ngIf="isEditing()"
-              type="text"
-              pInputText
-              [(ngModel)]="editForm().location"
-              class="w-full"
-              placeholder="Where are you located?">
-            <p *ngIf="!isEditing()" class="text-surface-600 dark:text-surface-400">
-              {{ user()?.location || 'Not specified' }}
-            </p>
+            @if (isEditing()) {
+              <input
+                type="text"
+                pInputText
+                [(ngModel)]="editForm().location"
+                class="w-full"
+                placeholder="Where are you located?">
+            }
+            @if (!isEditing()) {
+              <p class="text-surface-600 dark:text-surface-400">
+                {{ user()?.location || 'Not specified' }}
+              </p>
+            }
           </div>
 
           <!-- Status -->
@@ -204,12 +219,12 @@
     </p-card>
 
     <!-- Danger Zone -->
-    <p-card header="Account Actions" styleClass="border-red-200 dark:border-red-800">
+    <p-card header="Account Actions">
       <div class="space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border">
           <div>
-            <h4 class="font-medium text-red-900 dark:text-red-100">Logout</h4>
-            <p class="text-sm text-red-700 dark:text-red-300">Sign out of your account</p>
+            <h4 class="font-medium">Logout</h4>
+            <p class="text-sm">Sign out of your account</p>
           </div>
           <p-button
             label="Logout"
@@ -220,10 +235,10 @@
           </p-button>
         </div>
 
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border">
           <div>
-            <h4 class="font-medium text-red-900 dark:text-red-100">Delete Account</h4>
-            <p class="text-sm text-red-700 dark:text-red-300">Permanently delete your account and all data</p>
+            <h4 class="font-medium">Delete Account</h4>
+            <p class="text-sm">Permanently delete your account and all data</p>
           </div>
           <p-button
             label="Delete Account"

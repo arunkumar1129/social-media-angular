@@ -1,14 +1,13 @@
 import { Component, inject, input, computed, signal, model, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ListboxModule } from 'primeng/listbox';
-import { AvatarModule } from 'primeng/avatar';
-import { BadgeModule } from 'primeng/badge';
-import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { ButtonModule } from 'primeng/button';
-import { TooltipModule } from 'primeng/tooltip';
+import { ListboxModule  } from 'primeng/listbox';
+import { Avatar } from 'primeng/avatar';
+import { Badge } from 'primeng/badge';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { Button } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { Conversation } from '../../models/conversation.model';
 import { User } from '../../models/user.model';
 import { ConversationService } from '../../services/conversation.service';
@@ -17,23 +16,21 @@ import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-chat-list',
-  standalone: true,
+  templateUrl: './chat-list.html',
+  styleUrls: ['./chat-list.scss'],
   imports: [
-    CommonModule,
     FormsModule,
-    ListboxModule,
-    AvatarModule,
-    BadgeModule,
-    InputTextModule,
-    IconFieldModule,
-    InputIconModule,
-    ButtonModule,
-    TooltipModule,
+    ListboxModule ,
+    Avatar,
+    Badge,
+    InputText,
+    IconField,
+    InputIcon,
+    Button,
+    Tooltip,
     ContactsDialogComponent,
     TimeAgoPipe
-  ],
-  templateUrl: './chat-list.html',
-  styleUrls: ['./chat-list.scss']
+  ]
 })
 export class ChatListComponent {
   private conversationService = inject(ConversationService);

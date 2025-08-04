@@ -14,7 +14,15 @@
     </p-button>
     
     <div class="flex items-center">
-      <img src="talkio-logo.png" alt="Talkio Logo" class="brand-favicon" />
+      <div class="flex items-center px-2">
+        <div class="w-[40px]">
+          <img ngSrc="favicon-32x32.png" width="40" height="40" placeholder="Talkio" alt="Talkio Logo" />
+        </div>
+
+        <span class="ml-2 font-semibold text-2xl dark:text-white">
+          Talkio
+        </span>
+      </div>
       @if (totalUnreadCount() > 0) {
         <p-badge 
           [value]="totalUnreadCount().toString()" 
@@ -37,7 +45,7 @@
         routerLinkActive="active-nav"
         severity="secondary"
         size="small"
-        styleClass="nav-button text-white border-none">
+        styleClass="nav-button border-none">
       </p-button>
       
       <p-button
@@ -48,7 +56,7 @@
         routerLinkActive="active-nav"
         severity="secondary"
         size="small"
-        styleClass="nav-button text-white border-none">
+        styleClass="nav-button border-none">
       </p-button>
     </div>
 
