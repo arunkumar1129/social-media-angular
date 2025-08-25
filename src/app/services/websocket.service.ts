@@ -20,18 +20,6 @@ import {
   OnlineUsersListData,
   MessagesMarkReadData,
   MessagesReadData,
-  CallInitiateData,
-  CallIncomingData,
-  CallAnswerData,
-  CallAnsweredData,
-  CallEndData,
-  CallEndedData,
-  WebRTCOfferData,
-  WebRTCAnswerData,
-  WebRTCIceCandidateData,
-  WebRTCOfferEmitData,
-  WebRTCAnswerEmitData,
-  WebRTCIceCandidateEmitData,
   OnlineUser,
   createRoomName,
   RoomTypes,
@@ -83,14 +71,6 @@ export class WebSocketService {
   
   private _messagesRead = signal<MessagesReadData | null>(null);
   
-  private _callIncoming = signal<CallIncomingData | null>(null);
-  private _callAnswered = signal<CallAnsweredData | null>(null);
-  private _callEnded = signal<CallEndedData | null>(null);
-  
-  private _webrtcOffer = signal<WebRTCOfferEmitData | null>(null);
-  private _webrtcAnswer = signal<WebRTCAnswerEmitData | null>(null);
-  private _webrtcIceCandidate = signal<WebRTCIceCandidateEmitData | null>(null);
-  
   private _connectionStatus = signal<boolean>(false);
   
   // Legacy typing for backward compatibility
@@ -107,12 +87,6 @@ export class WebSocketService {
   readonly userStatusUpdate = this._userStatusUpdate.asReadonly();
   readonly onlineUsersList = this._onlineUsersList.asReadonly();
   readonly messagesRead = this._messagesRead.asReadonly();
-  readonly callIncoming = this._callIncoming.asReadonly();
-  readonly callAnswered = this._callAnswered.asReadonly();
-  readonly callEnded = this._callEnded.asReadonly();
-  readonly webrtcOffer = this._webrtcOffer.asReadonly();
-  readonly webrtcAnswer = this._webrtcAnswer.asReadonly();
-  readonly webrtcIceCandidate = this._webrtcIceCandidate.asReadonly();
   readonly connectionStatus = this._connectionStatus.asReadonly();
   readonly legacyTyping = this._legacyTyping.asReadonly();
 
@@ -240,32 +214,6 @@ export class WebSocketService {
     this.socket.on(SocketEvents.MESSAGES_READ, (data: MessagesReadData) => {
       this._messagesRead.set(data);
     });
-
-    // Call events
-    this.socket.on(SocketEvents.CALL_INCOMING, (data: CallIncomingData) => {
-      this._callIncoming.set(data);
-    });
-
-    this.socket.on(SocketEvents.CALL_ANSWERED, (data: CallAnsweredData) => {
-      this._callAnswered.set(data);
-    });
-
-    this.socket.on(SocketEvents.CALL_ENDED, (data: CallEndedData) => {
-      this._callEnded.set(data);
-    });
-
-    // WebRTC events
-    this.socket.on(SocketEvents.WEBRTC_OFFER, (data: WebRTCOfferEmitData) => {
-      this._webrtcOffer.set(data);
-    });
-
-    this.socket.on(SocketEvents.WEBRTC_ANSWER, (data: WebRTCAnswerEmitData) => {
-      this._webrtcAnswer.set(data);
-    });
-
-    this.socket.on(SocketEvents.WEBRTC_ICE_CANDIDATE, (data: WebRTCIceCandidateEmitData) => {
-      this._webrtcIceCandidate.set(data);
-    });
   }
 
   // Message Methods
@@ -373,46 +321,6 @@ export class WebSocketService {
     }
   }
 
-  // Call Methods
-
-  initiateCall(data: CallInitiateData): void {
-    if (this.isConnected()) {
-      this.socket?.emit(SocketEvents.CALL_INITIATE, data);
-    }
-  }
-
-  answerCall(data: CallAnswerData): void {
-    if (this.isConnected()) {
-      this.socket?.emit(SocketEvents.CALL_ANSWER, data);
-    }
-  }
-
-  endCall(data: CallEndData): void {
-    if (this.isConnected()) {
-      this.socket?.emit(SocketEvents.CALL_END, data);
-    }
-  }
-
-  // WebRTC Methods
-
-  sendWebRTCOffer(data: WebRTCOfferData): void {
-    if (this.isConnected()) {
-      this.socket?.emit(SocketEvents.WEBRTC_OFFER, data);
-    }
-  }
-
-  sendWebRTCAnswer(data: WebRTCAnswerData): void {
-    if (this.isConnected()) {
-      this.socket?.emit(SocketEvents.WEBRTC_ANSWER, data);
-    }
-  }
-
-  sendWebRTCIceCandidate(data: WebRTCIceCandidateData): void {
-    if (this.isConnected()) {
-      this.socket?.emit(SocketEvents.WEBRTC_ICE_CANDIDATE, data);
-    }
-  }
-
   // Utility Methods
 
   isConnected(): boolean {
@@ -430,12 +338,6 @@ export class WebSocketService {
     this._userStatusUpdate.set(null);
     this._onlineUsersList.set([]);
     this._messagesRead.set(null);
-    this._callIncoming.set(null);
-    this._callAnswered.set(null);
-    this._callEnded.set(null);
-    this._webrtcOffer.set(null);
-    this._webrtcAnswer.set(null);
-    this._webrtcIceCandidate.set(null);
     
     // Clear legacy typing signal
     this._legacyTyping.set(null);

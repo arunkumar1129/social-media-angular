@@ -5,6 +5,7 @@ import { InputText } from 'primeng/inputtext';
 import { Avatar } from 'primeng/avatar';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { Toolbar } from 'primeng/toolbar';
+import { Tooltip } from 'primeng/tooltip';
 import { Subscription } from 'rxjs';
 import { Conversation } from '../../models/conversation.model';
 import { User } from '../../models/user.model';
@@ -27,6 +28,7 @@ import { DatePipe } from '@angular/common';
     Avatar,
     ScrollPanel,
     Toolbar,
+    Tooltip,
     TimeAgoPipe,
     DatePipe
   ]

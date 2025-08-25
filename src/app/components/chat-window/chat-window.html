@@ -43,11 +43,14 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center">
-        <p-button icon="pi pi-phone" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
-        </p-button>
-        <p-button icon="pi pi-video" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
-        </p-button>
-        <p-button icon="pi pi-ellipsis-v" severity="secondary" [text]="true" [rounded]="true" class="p-button-xs" [class.p-button-sm]="deviceService.isDesktop()">
+        <p-button 
+          icon="pi pi-ellipsis-v" 
+          severity="secondary" 
+          [text]="true" 
+          [rounded]="true" 
+          class="p-button-xs" 
+          [class.p-button-sm]="deviceService.isDesktop()"
+          pTooltip="More options">
         </p-button>
       </div>
       </div>

@@ -113,71 +113,6 @@ export interface MessagesReadData {
     userId: string;
 }
 
-// Call Events
-export interface CallInitiateData {
-    conversationId: string;
-    type: 'voice' | 'video';
-    participants: string[];
-}
-
-export interface CallIncomingData {
-    callerId: string;
-    callerName: string;
-    conversationId: string;
-    type: 'voice' | 'video';
-    timestamp: Date;
-}
-
-export interface CallAnswerData {
-    conversationId: string;
-    accepted: boolean;
-}
-
-export interface CallAnsweredData {
-    userId: string;
-    accepted: boolean;
-}
-
-export interface CallEndData {
-    conversationId: string;
-}
-
-export interface CallEndedData {
-    userId: string;
-    timestamp: Date;
-}
-
-// WebRTC Events
-export interface WebRTCOfferData {
-    conversationId: string;
-    offer: RTCSessionDescriptionInit;
-}
-
-export interface WebRTCOfferEmitData {
-    offer: RTCSessionDescriptionInit;
-    senderId: string;
-}
-
-export interface WebRTCAnswerData {
-    conversationId: string;
-    answer: RTCSessionDescriptionInit;
-}
-
-export interface WebRTCAnswerEmitData {
-    answer: RTCSessionDescriptionInit;
-    senderId: string;
-}
-
-export interface WebRTCIceCandidateData {
-    conversationId: string;
-    candidate: RTCIceCandidate;
-}
-
-export interface WebRTCIceCandidateEmitData {
-    candidate: RTCIceCandidate;
-    senderId: string;
-}
-
 // Socket Event Names (for type safety)
 export enum SocketEvents {
     // Connection
@@ -210,19 +145,6 @@ export enum SocketEvents {
     // Message Read
     MESSAGES_MARK_READ = 'messages:mark_read',
     MESSAGES_READ = 'messages:read',
-
-    // Calls
-    CALL_INITIATE = 'call:initiate',
-    CALL_INCOMING = 'call:incoming',
-    CALL_ANSWER = 'call:answer',
-    CALL_ANSWERED = 'call:answered',
-    CALL_END = 'call:end',
-    CALL_ENDED = 'call:ended',
-
-    // WebRTC
-    WEBRTC_OFFER = 'webrtc:offer',
-    WEBRTC_ANSWER = 'webrtc:answer',
-    WEBRTC_ICE_CANDIDATE = 'webrtc:ice_candidate',
 }
 
 // Room Types
